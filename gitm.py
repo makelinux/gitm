@@ -4,6 +4,7 @@ import os
 from os.path import *
 import re
 import json
+import yaml
 import ago
 import sys
 import argparse
@@ -66,6 +67,7 @@ def git_tree(*argv):
     parser.add_argument('--sha', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--csv', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--json', nargs='?', default=argparse.SUPPRESS)
+    parser.add_argument('--yaml', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--compare', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--sync', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--verbose', action='store_true')
@@ -141,9 +143,16 @@ def git_tree(*argv):
 
     if 'compare' in args:
         if not args.compare:
-            args.compare = "status.json"
-        with open(args.compare, 'r') as f:
-            compare = Munch(json.load(f))
+            args.compare = "status.yaml"
+            if not isfile(args.compare):
+                args.compare = "status.json"
+        log(args.compare)
+        with open(args.compare) as f:
+            if args.compare.endswith('.yaml'):
+                print(yaml.load_all(f))
+                compare = Munch(yaml.load(f))  # Loader=yaml.FullLoader)
+            if args.compare.endswith('.json'):
+                compare = Munch(json.load(f))
 
     out = print_sha if 'sha' in args else out
     out = print_csv if 'csv' in args else out
@@ -191,6 +200,14 @@ def git_tree(*argv):
         else:
             f = open(args.json, "w")
         f.write(json.dumps({'status': status}, indent=4, default=str) + "\n")
+    if 'yaml' in args:
+        if not args.yaml:
+            args.yaml = "status.yaml"
+        if args.yaml == '-':
+            f = sys.stdout
+        else:
+            f = open(args.yaml, "w")
+        f.write(yaml.dump({'status': status}, default_flow_style=False, default_style=''))
     return ''
 
 
