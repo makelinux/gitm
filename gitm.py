@@ -145,11 +145,8 @@ def git_tree(*argv):
         with open(args.compare, 'r') as f:
             compare = Munch(json.load(f))
 
-    if 'sha' in args:
-        out = print_sha
-
-    if 'csv' in args:
-        out = print_csv
+    out = print_sha if 'sha' in args else out
+    out = print_csv if 'csv' in args else out
 
     if not out:
         fields = "dir ago count hash msg branch remote url linked state".split()
