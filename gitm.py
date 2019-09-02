@@ -162,8 +162,8 @@ def git_tree(*argv):
     status = {}
     for path, dirs, files in os.walk(args.d):
         (dir, base) = split(path)
-        if base == '.git':
-            dirs[:] = []
+        if base in ['.git', 'tmp']:
+            dirs[:] = []  # prune
         if '.git' in files or '.git' in dirs:
             p = re.sub(r'^\.\/', '', path)
             try:
