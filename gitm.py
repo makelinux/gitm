@@ -82,7 +82,9 @@ def git_tree(*argv):
             csv = open(args.csv, "w")
 
     def print_csv(p, st):
-        print("%s, %s, %d, %s, %s" % (p, st.datetime, st.count, st.sha, '"%s"' % (st.msg)))
+        print("%s, %s, %d, %s, %s, %s, %s" % (p, st.datetime, st.count, st.sha, '"%s"' % (st.msg),
+              st.get('worktree', st.get('linked', 'standalone')),
+              st.get('remote', '') + ' ' + st.get('url', 'local')))
 
     def print_sha(p, st):
         print(p, st.count, st.sha, '"%s"' % (st.msg))
@@ -145,7 +147,7 @@ def git_tree(*argv):
         out = print_csv
 
     if not out:
-        fields = "dir ago count hash msg branch remote url state".split()
+        fields = "dir ago count hash msg branch remote url linked state".split()
         tab = PrettyTable(fields, border=False, header=False, align="l")
         tab.align = "l"
         out = table_add_row
