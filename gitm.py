@@ -69,6 +69,7 @@ def git_tree(*argv):
     parser.add_argument('--compare', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--sync', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--verbose', action='store_true')
+    parser.add_argument('--standalone_remote', action='store_true')
     parser.add_argument('d', nargs='?', default='.')
     global args
     args = parser.parse_args()
@@ -165,10 +166,13 @@ def git_tree(*argv):
             p = re.sub(r'^\.\/', '', path)
             try:
                 st = git_get(p)
-                status[p] = dict(st)
                 if compare:
                     st.state = compare.status[p]['state'] if p in compare.status else 'redundant'
-                out(p, st)
+                # Get inly remote and standalone if requested
+                if (not args.standalone_remote or
+                   ('remote' in st and 'linked' not in st and 'worktree' not in st)):
+                    status[p] = dict(st)
+                    out(p, st)
             except (InvalidGitRepositoryError, GitCommandError, ValueError) as e:
                 warn('Error: ' + str(e) + (': ' + p if p not in str(e) else ''))
 
