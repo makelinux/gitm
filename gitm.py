@@ -24,7 +24,7 @@ def warn(a):
 
 def log(*_args, **kwargs):
     global args
-    if 'verbose' in args:
+    if args.verbose:
         print("%s:%d" % (inspect.stack()[1].filename, inspect.stack()[1].lineno),
               str(*_args).rstrip(), file=sys.stderr, **kwargs)
 
@@ -68,7 +68,7 @@ def git_tree(*argv):
     parser.add_argument('--json', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--compare', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--sync', nargs='?', default=argparse.SUPPRESS)
-    parser.add_argument('--verbose', nargs='?', default=argparse.SUPPRESS)
+    parser.add_argument('--verbose', action='store_true')
     parser.add_argument('d', nargs='?', default='.')
     global args
     args = parser.parse_args()
