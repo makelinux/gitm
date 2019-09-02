@@ -73,6 +73,8 @@ def git_tree(*argv):
     parser.add_argument('d', nargs='?', default='.')
     global args
     args = parser.parse_args()
+    status = {}
+
     if 'csv' in args:
         if not args.csv:
             args.csv = "status.csv"
@@ -109,28 +111,31 @@ def git_tree(*argv):
             r.git.checkout(s.branch)
         if s.sha != r.commit('HEAD').hexsha:
             r.git.checkout(s.sha)
-        compare.status[d]['state'] = 'synced'
+        s.state = 'synced'
         # assure same
         if s.sha == r.commit('HEAD').hexsha:
-            compare.status[d]['state'] += ' same'
+            s.state += ' same'
 
     def git_compare(d, s):
-        s = Munch(s)
         same = False
+        s = Munch(s)
         if not exists(d + '/.git'):
-            compare.status[d]['state'] = 'absent'
+            s.state = 'absent'
+            log(d)
         else:
             r = Repo(d)
             if s.sha != r.commit('HEAD').hexsha:
-                compare.status[d]['state'] = 'different'
+                s.state = 'different'
             elif not r.head.is_detached and r.active_branch.name == s.get('branch', ''):
                 print(d, r.active_branch.name, s.get('branch', ''))
-                compare.status[d]['state'] = 'same'
+                s.state = 'same'
                 same = True
             else:
-                compare.status[d]['state'] = 'same detached'
+                s.state = 'same detached'
         if not same:
             git_sync(d, s)
+        out(d, s)
+        status[d] = s
 
     compare = out = tab = None
 
@@ -159,7 +164,6 @@ def git_tree(*argv):
             except (InvalidGitRepositoryError, GitCommandError, ValueError) as e:
                 warn('Error: ' + str(e) + (': ' + d if d not in str(e) else ''))
 
-    status = {}
     for path, dirs, files in os.walk(args.d):
         (dir, base) = split(path)
         if base in ['.git', 'tmp']:
@@ -168,13 +172,15 @@ def git_tree(*argv):
             p = re.sub(r'^\.\/', '', path)
             try:
                 st = git_get(p)
-                if compare:
-                    st.state = compare.status[p]['state'] if p in compare.status else 'redundant'
-                # Get inly remote and standalone if requested
+                # Get only remote and standalone if requested
                 if (not args.standalone_remote or
                    ('remote' in st and 'linked' not in st and 'worktree' not in st)):
                     status[p] = dict(st)
-                    out(p, st)
+                    if compare and p not in compare.status:
+                        st.state = 'redundant'
+                        out(p, st)
+                    if not compare:
+                        out(p, st)
             except (InvalidGitRepositoryError, GitCommandError, ValueError) as e:
                 warn('Error: ' + str(e) + (': ' + p if p not in str(e) else ''))
 
