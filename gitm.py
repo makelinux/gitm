@@ -26,7 +26,8 @@ def warn(a):
 def log(*_args, **kwargs):
     global args
     if args.verbose:
-        print("%s:%d" % (inspect.stack()[1].filename, inspect.stack()[1].lineno),
+        print("%s:%d" % (inspect.stack()[1].filename,
+                         inspect.stack()[1].lineno),
               str(*_args).rstrip(), file=sys.stderr, **kwargs)
 
 
@@ -86,9 +87,10 @@ def git_tree(*argv):
             csv = open(args.csv, "w")
 
     def print_csv(p, st):
-        print("%s, %s, %d, %s, %s, %s, %s" % (p, st.datetime, st.count, st.sha, '"%s"' % (st.msg),
-              st.get('worktree', st.get('linked', 'standalone')),
-              st.get('remote', '') + ' ' + st.get('url', 'local')))
+        print("%s, %s, %d, %s, %s, %s, %s"
+              % (p, st.datetime, st.count, st.sha, '"%s"' % (st.msg),
+                  st.get('worktree', st.get('linked', 'standalone')),
+                  st.get('remote', '') + ' ' + st.get('url', 'local')))
 
     def print_sha(p, st):
         print(p, st.count, st.sha, '"%s"' % (st.msg))
@@ -98,7 +100,8 @@ def git_tree(*argv):
         r['dir'] = p
         r.update(dict(st))
         r['msg'] = short(r['msg'])
-        r['ago'] = ago.human(datetime.fromtimestamp(int(st.time_sec)), precision=2, past_tense='{}', future_tense='{}')
+        r['ago'] = ago.human(datetime.fromtimestamp(int(st.time_sec)),
+                             precision=2, past_tense='{}', future_tense='{}')
         if 'branch' in r:
             r['branch'] = short(r['branch'])
         tab.add_row([r[f] if f in r else '' for f in fields])
@@ -128,7 +131,8 @@ def git_tree(*argv):
             r = Repo(d)
             if s.sha != r.commit('HEAD').hexsha:
                 s.state = 'different'
-            elif not r.head.is_detached and r.active_branch.name == s.get('branch', ''):
+            elif (not r.head.is_detached
+                    and r.active_branch.name == s.get('branch', '')):
                 print(d, r.active_branch.name, s.get('branch', ''))
                 s.state = 'same'
                 same = True
@@ -157,8 +161,9 @@ def git_tree(*argv):
     out = print_sha if 'sha' in args else out
     out = print_csv if 'csv' in args else out
 
-    if not out:
-        fields = "dir ago count hash msg branch remote url linked state".split()
+    if not out:  # default output is table
+        fields = ("dir ago count hash msg branch remote url linked state"
+                  .split())
         tab = PrettyTable(fields, border=False, header=False, align="l")
         tab.align = "l"
         out = table_add_row
@@ -167,8 +172,10 @@ def git_tree(*argv):
         for d, s in compare['status'].items():
             try:
                 git_compare(d, s)
-            except (InvalidGitRepositoryError, GitCommandError, ValueError) as e:
-                warn('Error: ' + str(e) + (': ' + d if d not in str(e) else ''))
+            except (InvalidGitRepositoryError, GitCommandError,
+                    ValueError) as e:
+                warn('Error: ' + str(e) +
+                     (': ' + d if d not in str(e) else ''))
 
     for path, dirs, files in os.walk(args.d):
         (dir, base) = split(path)
@@ -207,7 +214,8 @@ def git_tree(*argv):
             f = sys.stdout
         else:
             f = open(args.yaml, "w")
-        f.write(yaml.dump({'status': status}, default_flow_style=False, default_style=''))
+        f.write(yaml.dump({'status': status},
+                default_flow_style=False, default_style=''))
     return ''
 
 
