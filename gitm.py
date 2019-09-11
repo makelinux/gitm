@@ -76,6 +76,7 @@ def git_tree(*argv):
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--standalone_remote', action='store_true')
     parser.add_argument('d', nargs='?', default='.')
+    parser.add_argument('rest', nargs='?')
     global args
     args = parser.parse_args()
     status = {}
