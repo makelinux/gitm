@@ -47,7 +47,7 @@ def git_get(g):
     if cr.has_option('core', 'worktree'):
         m.worktree = cr.get_value('core', 'worktree')
     m.revision = r.git.describe('--always')
-    m.branches = r.branches
+    # m.branches = list(r.branches)
     if not r.head.is_detached:
         m.branch = r.active_branch.name
     if r.remotes:
@@ -67,14 +67,25 @@ def git_tree(*argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('--table', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--sha', nargs='?', default=argparse.SUPPRESS,
-                        help='print sha hashes in format of sha1sum utility')
-    parser.add_argument('--csv', nargs='?', default=argparse.SUPPRESS)
+                        help='print sha hashes in format of sha1sum utility'
+                        'optionally to a file')
+    parser.add_argument('--csv', nargs='?', default=argparse.SUPPRESS,
+            help='print in format csv'
+            'optionally to a file')
     parser.add_argument('--json', nargs='?', default=argparse.SUPPRESS)
-    parser.add_argument('--export', nargs='?', default=argparse.SUPPRESS)
-    parser.add_argument('--compare', nargs='?', default=argparse.SUPPRESS)
-    parser.add_argument('--import', nargs='?', default=argparse.SUPPRESS)
+    parser.add_argument('--export', nargs='?', default=argparse.SUPPRESS,
+                        help='scans directory tree and saves results status.yaml')
+    parser.add_argument('--compare', nargs='?', default=argparse.SUPPRESS,
+                        help='scans directory tree and compares with status.yaml')
+    parser.add_argument('--import', nargs='?', default=argparse.SUPPRESS,
+                        help='scans directory tree and synchronizes with status.yaml')
     parser.add_argument('--verbose', action='store_true')
-    parser.add_argument('--standalone_remote', action='store_true')
+    parser.add_argument('--standalone_remote', action='store_true',
+                        help='Skips repositories linked (not standalone) and without remotes. '
+                        'Leaves only unlinked standalone with remotes. '
+                        'Linked reps belong to git submodules or repo. '
+                        'This reps can be replicated with parent git or repo. '
+                        'Reps without remote can\'t be synced via remote.')
     parser.add_argument('d', nargs='?', default='.')
     parser.add_argument('rest', nargs='?')
     global args
