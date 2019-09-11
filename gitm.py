@@ -195,14 +195,18 @@ def git_tree(*argv):
             try:
                 st = git_get(p)
                 # Get only remote and standalone if requested
-                if (not args.standalone_remote or
-                   ('remote' in st and 'linked' not in st and 'worktree' not in st)):
-                    status[p] = dict(st)
-                    if compare and p not in compare.status:
-                        st.state = 'redundant'
-                        out(p, st)
-                    if not compare:
-                        out(p, st)
+                if (args.standalone_remote and
+                        ('remote' not in st
+                            or 'linked' in st
+                            or 'worktree' in st)):
+                    continue
+                status[p] = dict(st)
+                if compare and p not in compare.status:
+                    # only here and not in compare
+                    st.state = 'undesired'
+                    out(p, st)
+                if not compare:
+                    out(p, st)
             except (InvalidGitRepositoryError, GitCommandError, ValueError) as e:
                 warn('Error: ' + str(e) + (': ' + p if p not in str(e) else ''))
 
