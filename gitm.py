@@ -181,12 +181,17 @@ def git_tree(*argv):
                 warn('Error: ' + str(e) +
                      (': ' + d if d not in str(e) else ''))
 
-    for path, dirs, files in os.walk(args.d):
-        (dir, base) = split(path)
-        if base in ['.git', 'tmp']:
-            dirs[:] = []  # prune
-        if '.git' in files or '.git' in dirs:
+    def scan(d):
+        for path, dirs, files in os.walk(d):
+            (dir, base) = split(path)
             p = re.sub(r'^\.\/', '', path)
+            log(p)
+            if base in ['.git', 'tmp']:
+                dirs[:] = []  # prune
+                continue
+            if not ('.git' in files or '.git' in dirs):
+                continue
+
             try:
                 st = git_get(p)
                 # Get only remote and standalone if requested
@@ -201,6 +206,8 @@ def git_tree(*argv):
             except (InvalidGitRepositoryError, GitCommandError, ValueError) as e:
                 warn('Error: ' + str(e) + (': ' + p if p not in str(e) else ''))
 
+    if isdir(args.d):
+        scan(args.d)
     if tab:
         print(tab)
     if 'json' in args:
