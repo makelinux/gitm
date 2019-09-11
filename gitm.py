@@ -69,7 +69,7 @@ def git_tree(*argv):
                         help='print sha hashes in format of sha1sum utility')
     parser.add_argument('--csv', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--json', nargs='?', default=argparse.SUPPRESS)
-    parser.add_argument('--yaml', nargs='?', default=argparse.SUPPRESS)
+    parser.add_argument('--export', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--compare', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--sync', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--verbose', action='store_true')
@@ -208,13 +208,14 @@ def git_tree(*argv):
         else:
             f = open(args.json, "w")
         f.write(json.dumps({'status': status}, indent=4, default=str) + "\n")
-    if 'yaml' in args:
-        if not args.yaml:
-            args.yaml = "status.yaml"
-        if args.yaml == '-':
+
+    if 'export' in args:
+        if not args.export:
+            args.export = "status.yaml"
+        if args.export == '-':
             f = sys.stdout
         else:
-            f = open(args.yaml, "w")
+            f = open(args.export, "w")
         f.write(yaml.dump({'status': status},
                 default_flow_style=False, default_style=''))
     return ''
