@@ -71,7 +71,7 @@ def git_tree(*argv):
     parser.add_argument('--json', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--export', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--compare', nargs='?', default=argparse.SUPPRESS)
-    parser.add_argument('--sync', nargs='?', default=argparse.SUPPRESS)
+    parser.add_argument('--import', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--standalone_remote', action='store_true')
     parser.add_argument('d', nargs='?', default='.')
@@ -107,8 +107,8 @@ def git_tree(*argv):
             r['branch'] = short(r['branch'])
         tab.add_row([r[f] if f in r else '' for f in fields])
 
-    def git_sync(d, s):
-        if 'sync' not in args:
+    def git_import(d, s):
+        if 'import' not in args:
             return
         if not exists(d + '/.git'):
             Repo.clone_from(s.url, d)
@@ -117,7 +117,7 @@ def git_tree(*argv):
             r.git.checkout(s.branch)
         if s.sha != r.commit('HEAD').hexsha:
             r.git.checkout(s.sha)
-        s.state = 'synced'
+        s.state = 'imported'
         # assure same
         if s.sha == r.commit('HEAD').hexsha:
             s.state += ' same'
@@ -140,7 +140,7 @@ def git_tree(*argv):
             else:
                 s.state = 'same detached'
         if not same:
-            git_sync(d, s)
+            git_import(d, s)
         out(d, s)
         status[d] = s
 
@@ -154,10 +154,13 @@ def git_tree(*argv):
         log(args.compare)
         with open(args.compare) as f:
             if args.compare.endswith('.yaml'):
-                print(yaml.load_all(f))
-                compare = Munch(yaml.load(f))  # Loader=yaml.FullLoader)
+                compare = Munch(yaml.load(f))
             if args.compare.endswith('.json'):
                 compare = Munch(json.load(f))
+    else:
+        if isfile('status.yaml'):
+            with open('status.yaml') as f:
+                compare = Munch(yaml.load(f))
 
     out = print_sha if 'sha' in args else out
     out = print_csv if 'csv' in args else out
