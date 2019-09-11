@@ -47,6 +47,7 @@ def git_get(g):
     if cr.has_option('core', 'worktree'):
         m.worktree = cr.get_value('core', 'worktree')
     m.revision = r.git.describe('--always')
+    m.branches = r.branches
     if not r.head.is_detached:
         m.branch = r.active_branch.name
     if r.remotes:
