@@ -212,6 +212,17 @@ def git_tree(*argv):
 
     if isdir(args.d):
         scan(args.d)
+    elif args.rest:
+        print(args.d, args.rest)
+        print("git -C " + dirname(args.rest) + args.d + basename(args.rest))
+        os.system("git -C " + dirname(args.rest) + " " + args.d + " " + basename(args.rest))
+    else:
+        if compare and 'status' in compare:
+            for d, s in compare['status'].items():
+                print(d)
+                os.system("git -C " + d + " " + args.d + " ")
+        status = compare.status
+
     if tab:
         print(tab)
     if 'json' in args:
