@@ -246,4 +246,5 @@ def git_tree(*argv):
     return ''
 
 
-git_tree()
+if __name__ == "__main__":
+    git_tree()
