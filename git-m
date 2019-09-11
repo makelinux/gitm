@@ -185,7 +185,7 @@ def git_tree(*argv):
         tab.align = "l"
         out = table_add_row
 
-    if 'compare' in args and compare and 'status' in compare:
+    if compare and 'status' in compare:
         for d, s in compare['status'].items():
             try:
                 git_compare(d, s)
@@ -223,13 +223,14 @@ def git_tree(*argv):
             except (InvalidGitRepositoryError, GitCommandError, ValueError) as e:
                 warn('Error: ' + str(e) + (': ' + p if p not in str(e) else ''))
 
-    if isdir(args.d):
+    if isdir(args.d and (not compare or 'compare' in args)):
+        # don't scan if compare is loaded and not in compare more
         scan(args.d)
     elif args.rest:
         print(args.d, args.rest)
         print("git -C " + dirname(args.rest) + args.d + basename(args.rest))
         os.system("git -C " + dirname(args.rest) + " " + args.d + " " + basename(args.rest))
-    else:
+    elif not isdir(args.d):
         if compare and 'status' in compare:
             for d, s in compare['status'].items():
                 print(d)
