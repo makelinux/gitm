@@ -214,7 +214,7 @@ def git_tree(*argv):
                             or 'worktree' in st)):
                     continue
                 status[p] = dict(st)
-                if compare and p not in compare.status:
+                if 'compare' in args and compare and p not in compare.status:
                     # only here and not in compare
                     st.state = 'undesired'
                     out(p, st)
@@ -223,7 +223,7 @@ def git_tree(*argv):
             except (InvalidGitRepositoryError, GitCommandError, ValueError) as e:
                 warn('Error: ' + str(e) + (': ' + p if p not in str(e) else ''))
 
-    if isdir(args.d and (not compare or 'compare' in args)):
+    if isdir(args.d) and (not compare or 'compare' in args or 'export' in args):
         # don't scan if compare is loaded and not in compare more
         scan(args.d)
     elif args.rest:
