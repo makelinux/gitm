@@ -65,7 +65,8 @@ def git_tree(*argv):
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--table', nargs='?', default=argparse.SUPPRESS)
-    parser.add_argument('--sha', nargs='?', default=argparse.SUPPRESS)
+    parser.add_argument('--sha', nargs='?', default=argparse.SUPPRESS,
+                        help='print sha hashes in format of sha1sum utility')
     parser.add_argument('--csv', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--json', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--yaml', nargs='?', default=argparse.SUPPRESS)
@@ -93,7 +94,7 @@ def git_tree(*argv):
                   st.get('remote', '') + ' ' + st.get('url', 'local')))
 
     def print_sha(p, st):
-        print(p, st.count, st.sha, '"%s"' % (st.msg))
+        print("%s  %s" % (st.sha, p))
 
     def table_add_row(p, st):
         r = {}
