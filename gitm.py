@@ -172,7 +172,7 @@ def git_tree(*argv):
         tab.align = "l"
         out = table_add_row
 
-    if compare and 'status' in compare:
+    if 'compare' in args and compare and 'status' in compare:
         for d, s in compare['status'].items():
             try:
                 git_compare(d, s)
