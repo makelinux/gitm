@@ -44,11 +44,11 @@ def git_get(g):
         m.count = int(r.git.rev_list('--count', 'HEAD'))
         m.time_sec = r.head.commit.committed_date
         m.datetime = r.head.commit.committed_datetime
+        m.revision = r.git.describe(['--always', '--contains'])
     except GitCommandError:
         m.count = 0
         # without commit
         pass
-    m.revision = r.git.describe(['--always', '--contains'])
     cr = r.config_reader()
     if islink(g + '/.git/config'):
         m.linked = dirname(relpath(realpath(g + '/.git/config')))
