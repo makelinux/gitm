@@ -72,8 +72,8 @@ def git_tree(*argv):
                         help='print sha hashes in format of sha1sum utility'
                         'optionally to a file')
     parser.add_argument('--csv', nargs='?', default=argparse.SUPPRESS,
-            help='print in format csv'
-            'optionally to a file')
+                        help='print in format csv'
+                        'optionally to a file')
     parser.add_argument('--json', nargs='?', default=argparse.SUPPRESS)
     parser.add_argument('--export', nargs='?', default=argparse.SUPPRESS,
                         help='scans directory tree and saves results status.yaml')
