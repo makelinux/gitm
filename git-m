@@ -123,8 +123,8 @@ def git_tree(*argv):
         r.update(dict(st))
         r['msg'] = short(r.get('msg'))
         if 'time_sec' in st:
-            r['ago'] = ago.human(datetime.fromtimestamp(int(st.time_sec)),
-                                 precision=2, past_tense='{}', future_tense='{}')
+            r['ago'] = short(ago.human(datetime.fromtimestamp(int(st.time_sec)),
+                                 precision=2, past_tense='{}', future_tense='{}'))
         if 'branch' in r:
             r['branch'] = short(r['branch'])
         tab.add_row([r[f] if f in r else '' for f in fields])
