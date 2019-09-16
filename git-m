@@ -126,9 +126,13 @@ def git_tree(*argv):
     def git_import(d, s):
         if 'import' not in args or 'remote' not in s:
             return
-        if not exists(d + '/.git'):
-            Repo.clone_from(s.url, d)
-        r = Repo(d)
+        if exists(d + '/.git'):
+            r = Repo(d)
+        else:
+            try:
+                r = Repo.clone_from(s.url, d)
+            except (AttributeError, GitCommandError) as e:
+                r = Repo.init(d)
         if 'branch' in s:
             r.git.checkout(s.branch)
         if 'sha' not in s:
