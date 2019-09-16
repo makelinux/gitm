@@ -189,7 +189,7 @@ def git_tree(*argv):
     out = print_csv if 'csv' in args else out
 
     if not out:  # default output is table
-        fields = ("dir ago count hash msg branch remote url linked state"
+        fields = ("dir ago count revision hash msg branch remote url linked state"
                   .split())
         tab = PrettyTable(fields, border=False, header=False, align="l")
         tab.align = "l"
@@ -205,6 +205,7 @@ def git_tree(*argv):
             traceback.print_exc()
 
     def scan(d):
+        warn('Scanning directory tree ...')
         for path, dirs, files in os.walk(d):
             (dir, base) = split(path)
             p = re.sub(r'^\.\/', '', path)
@@ -247,8 +248,8 @@ def git_tree(*argv):
             os.system("git -C " + d + " " + args.d + " ")
         # status = loaded.status
 
-    if tab:
-        print(tab)
+    print(tab) if tab else 0
+
     if 'json' in args:
         if not args.json:
             args.json = "status.json"
@@ -267,7 +268,7 @@ def git_tree(*argv):
             f = open(args.export, "w")
         f.write(yaml.dump(status,
                 default_flow_style=False, default_style=''))
-        warn('Exported status into file ' + args.export);
+        warn('Exported status into file ' + args.export)
     return ''
 
 
