@@ -133,6 +133,9 @@ def git_tree(*argv):
                 r = Repo.clone_from(s.url, d)
             except (AttributeError, GitCommandError) as e:
                 r = Repo.init(d)
+        if s.remote not in [a.name for a in r.remotes]:
+            r.create_remote(s.remote, s.url)
+            r.git.fetch(s.remote)
         if 'branch' in s:
             r.git.checkout(s.branch)
         if 'sha' not in s:
