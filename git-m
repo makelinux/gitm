@@ -59,7 +59,7 @@ def git_get(g):
 
 
 def short(s):
-    if len(s) > 16:
+    if s and len(s) > 16:
         return s[:15] + '…'
     return s
 
@@ -105,34 +105,41 @@ def git_tree(*argv):
     def print_csv(p, st):
         print("%s, %s, %d, %s, %s, %s, %s"
               % (p, st.datetime, st.count, st.sha, '"%s"' % (st.msg),
-                  st.get('worktree', st.get('linked', 'standalone')),
-                  st.get('remote', '') + ' ' + st.get('url', 'local')))
+                 st.get('worktree', st.get('linked', 'standalone')),
+                 st.get('remote', '') + ' ' + st.get('url', 'local'))) if 'sha' in st else 0
 
     def print_sha(p, st):
-        print("%s  %s" % (st.sha, p))
+        print("%s  %s" % (st.sha, p)) if 'sha' in st else 0
 
     def table_add_row(p, st):
         r = {}
         r['dir'] = p
         r.update(dict(st))
-        r['msg'] = short(r['msg'])
-        r['ago'] = ago.human(datetime.fromtimestamp(int(st.time_sec)),
-                             precision=2, past_tense='{}', future_tense='{}')
+        r['msg'] = short(r.get('msg'))
+        if 'time_sec' in st:
+            r['ago'] = ago.human(datetime.fromtimestamp(int(st.time_sec)),
+                                 precision=2, past_tense='{}', future_tense='{}')
         if 'branch' in r:
             r['branch'] = short(r['branch'])
         tab.add_row([r[f] if f in r else '' for f in fields])
 
     def git_import(d, s):
-        if 'import' not in args:
+        if 'import' not in args or 'remote' not in s:
             return
         if not exists(d + '/.git'):
             Repo.clone_from(s.url, d)
         r = Repo(d)
         if 'branch' in s:
             r.git.checkout(s.branch)
-        if s.sha != r.commit('HEAD').hexsha:
-            r.git.checkout(s.sha)
-        s.state = 'imported'
+        if 'sha' not in s:
+            return
+        try:
+            if s.sha != r.commit('HEAD').hexsha:
+                r.git.checkout(s.sha)
+            s.state = 'imported'
+        except GitCommandError:
+            s.state = 'failed'
+            pass
         # assure same
         if s.sha == r.commit('HEAD').hexsha:
             s.state += ' same'
@@ -145,15 +152,16 @@ def git_tree(*argv):
             log(d)
         else:
             r = Repo(d)
-            if s.sha != r.commit('HEAD').hexsha:
-                s.state = 'different'
-            elif (not r.head.is_detached
-                    and r.active_branch.name == s.get('branch', '')):
-                print(d, r.active_branch.name, s.get('branch', ''))
-                s.state = 'same'
-                same = True
-            else:
-                s.state = 'same detached'
+            if 'sha' in s:
+                if s.sha != r.commit('HEAD').hexsha:
+                    s.state = 'different'
+                elif (not r.head.is_detached
+                        and r.active_branch.name == s.get('branch', '')):
+                    print(d, r.active_branch.name, s.get('branch', ''))
+                    s.state = 'same'
+                    same = True
+                else:
+                    s.state = 'same detached'
         if not same:
             git_import(d, s)
         out(d, s)
