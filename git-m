@@ -9,6 +9,7 @@ import ago
 import sys
 import argparse
 import inspect
+import traceback
 from datetime import datetime
 from prettytable import PrettyTable
 from git.exc import InvalidGitRepositoryError, GitCommandError
@@ -158,7 +159,7 @@ def git_tree(*argv):
         out(d, s)
         status[d] = s
 
-    compare = out = tab = None
+    loaded = out = tab = None
 
     if 'compare' in args:
         if not args.compare:
@@ -168,13 +169,13 @@ def git_tree(*argv):
         log(args.compare)
         with open(args.compare) as f:
             if args.compare.endswith('.yaml'):
-                compare = Munch(yaml.load(f))
+                loaded = Munch(yaml.load(f))
             if args.compare.endswith('.json'):
-                compare = Munch(json.load(f))
+                loaded = Munch(json.load(f))
     else:
         if isfile('status.yaml'):
             with open('status.yaml') as f:
-                compare = Munch(yaml.load(f))
+                loaded = Munch(yaml.load(f))
 
     out = print_sha if 'sha' in args else out
     out = print_csv if 'csv' in args else out
@@ -186,14 +187,14 @@ def git_tree(*argv):
         tab.align = "l"
         out = table_add_row
 
-    if compare and 'status' in compare:
-        for d, s in compare['status'].items():
-            try:
-                git_compare(d, s)
-            except (InvalidGitRepositoryError, GitCommandError,
-                    ValueError) as e:
-                warn('Error: ' + str(e) +
-                     (': ' + d if d not in str(e) else ''))
+    for d, s in loaded.items() if loaded else {}:
+        try:
+            git_compare(d, s)
+        except (InvalidGitRepositoryError, GitCommandError,
+                ValueError) as e:
+            warn('Error: ' + str(e) +
+                 (': ' + d if d not in str(e) else ''))
+            traceback.print_exc()
 
     def scan(d):
         for path, dirs, files in os.walk(d):
@@ -215,28 +216,28 @@ def git_tree(*argv):
                             or 'worktree' in st)):
                     continue
                 status[p] = dict(st)
-                if 'compare' in args and compare and p not in compare.status:
+                if 'compare' in args and loaded and p not in loaded:
                     # only here and not in compare
                     st.state = 'undesired'
                     out(p, st)
-                if not compare:
+                if not loaded:
                     out(p, st)
             except (InvalidGitRepositoryError, GitCommandError, ValueError) as e:
                 warn('Error: ' + str(e) + (': ' + p if p not in str(e) else ''))
-
-    if isdir(args.d) and (not compare or 'compare' in args or 'export' in args):
-        # don't scan if compare is loaded and not in compare more
+                traceback.print_exc()
+    log(loaded)
+    if isdir(args.d) and (not loaded or 'compare' in args or 'export' in args):
+        # don't scan if loaded and not in compare mode
         scan(args.d)
     elif args.rest:
         print(args.d, args.rest)
         print("git -C " + dirname(args.rest) + args.d + basename(args.rest))
         os.system("git -C " + dirname(args.rest) + " " + args.d + " " + basename(args.rest))
     elif not isdir(args.d):
-        if compare and 'status' in compare:
-            for d, s in compare['status'].items():
-                print(d)
-                os.system("git -C " + d + " " + args.d + " ")
-        status = compare.status
+        for d, s in loaded.items() if loaded else {}:
+            print(d)
+            os.system("git -C " + d + " " + args.d + " ")
+        # status = loaded.status
 
     if tab:
         print(tab)
@@ -247,7 +248,7 @@ def git_tree(*argv):
             f = sys.stdout
         else:
             f = open(args.json, "w")
-        f.write(json.dumps({'status': status}, indent=4, default=str) + "\n")
+        f.write(json.dumps(status, indent=4, default=str) + "\n")
 
     if 'export' in args:
         if not args.export:
@@ -256,8 +257,9 @@ def git_tree(*argv):
             f = sys.stdout
         else:
             f = open(args.export, "w")
-        f.write(yaml.dump({'status': status},
+        f.write(yaml.dump(status,
                 default_flow_style=False, default_style=''))
+        warn('Exported status into file ' + args.export);
     return ''
 
 
