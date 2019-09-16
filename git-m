@@ -109,8 +109,8 @@ def git_tree(*argv):
 
     def print_csv(p, st):
         print("%s, %s, %d, %s, %s, %s, %s"
-              % (p, st.get('datetime',''), st.get('count', 0), st.get('sha', ''), '"%s"' %
-                (st.get('msg','')),
+              % (p, st.get('datetime', ''), st.get('count', 0), st.get('sha', ''), '"%s"' %
+                 (st.get('msg', '')),
                  st.get('worktree', st.get('linked', 'standalone')),
                  st.get('remote', '') + ' ' + st.get('url', 'local')))
 
@@ -124,7 +124,7 @@ def git_tree(*argv):
         r['msg'] = short(r.get('msg'))
         if 'time_sec' in st:
             r['ago'] = short(ago.human(datetime.fromtimestamp(int(st.time_sec)),
-                                 precision=2, past_tense='{}', future_tense='{}'))
+                             precision=2, past_tense='{}', future_tense='{}'))
         if 'branch' in r:
             r['branch'] = short(r['branch'])
         tab.add_row([r[f] if f in r else '' for f in fields])
@@ -170,7 +170,6 @@ def git_tree(*argv):
                     s.state = 'different'
                 elif (not r.head.is_detached
                         and r.active_branch.name == s.get('branch', '')):
-                    #print(d, r.active_branch.name, s.get('branch', ''))
                     s.state = 'same'
                     same = True
                 else:
