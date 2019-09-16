@@ -34,20 +34,21 @@ def log(*_args, **kwargs):
 def git_get(g):
     m = Munch()
     r = Repo(g)
-    m.time_sec = r.head.commit.committed_date
-    m.datetime = r.head.commit.committed_datetime
-    m.sha = r.commit('HEAD').hexsha
-    m.hash = r.git.rev_parse('--short', 'HEAD')
-    m.msg = r.head.object.message.split('\n')[0]
-    m.count = int(r.git.rev_list('--count', 'HEAD'))
+    if len(r.branches):
+        m.branches = [b.name for b in r.branches]
+        m.time_sec = r.head.commit.committed_date
+        m.datetime = r.head.commit.committed_datetime
+        m.sha = r.commit('HEAD').hexsha
+        m.hash = r.git.rev_parse('--short', 'HEAD')
+        m.msg = r.head.object.message.split('\n')[0]
+        m.count = int(r.git.rev_list('--count', 'HEAD'))
+        m.revision = r.git.describe(['--always', '--contains'])
     cr = r.config_reader()
     if islink(g + '/.git/config'):
         m.linked = dirname(relpath(realpath(g + '/.git/config')))
 
     if cr.has_option('core', 'worktree'):
         m.worktree = cr.get_value('core', 'worktree')
-    m.revision = r.git.describe('--always')
-    # m.branches = list(r.branches)
     if not r.head.is_detached:
         m.branch = r.active_branch.name
     if r.remotes:
