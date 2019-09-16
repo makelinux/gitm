@@ -37,13 +37,18 @@ def git_get(g):
     r = Repo(g)
     if len(r.branches):
         m.branches = [b.name for b in r.branches]
-        m.time_sec = r.head.commit.committed_date
-        m.datetime = r.head.commit.committed_datetime
-        m.sha = r.commit('HEAD').hexsha
+    try:
         m.hash = r.git.rev_parse('--short', 'HEAD')
+        m.sha = r.commit('HEAD').hexsha
         m.msg = r.head.object.message.split('\n')[0]
         m.count = int(r.git.rev_list('--count', 'HEAD'))
-        m.revision = r.git.describe(['--always', '--contains'])
+        m.time_sec = r.head.commit.committed_date
+        m.datetime = r.head.commit.committed_datetime
+    except GitCommandError:
+        m.count = 0
+        # without commit
+        pass
+    m.revision = r.git.describe(['--always', '--contains'])
     cr = r.config_reader()
     if islink(g + '/.git/config'):
         m.linked = dirname(relpath(realpath(g + '/.git/config')))
@@ -104,9 +109,10 @@ def git_tree(*argv):
 
     def print_csv(p, st):
         print("%s, %s, %d, %s, %s, %s, %s"
-              % (p, st.datetime, st.count, st.sha, '"%s"' % (st.msg),
+              % (p, st.get('datetime',''), st.get('count', 0), st.get('sha', ''), '"%s"' %
+                (st.get('msg','')),
                  st.get('worktree', st.get('linked', 'standalone')),
-                 st.get('remote', '') + ' ' + st.get('url', 'local'))) if 'sha' in st else 0
+                 st.get('remote', '') + ' ' + st.get('url', 'local')))
 
     def print_sha(p, st):
         print("%s  %s" % (st.sha, p)) if 'sha' in st else 0
@@ -164,7 +170,7 @@ def git_tree(*argv):
                     s.state = 'different'
                 elif (not r.head.is_detached
                         and r.active_branch.name == s.get('branch', '')):
-                    print(d, r.active_branch.name, s.get('branch', ''))
+                    #print(d, r.active_branch.name, s.get('branch', ''))
                     s.state = 'same'
                     same = True
                 else:
