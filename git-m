@@ -124,7 +124,7 @@ def git_tree(*argv):
         r['msg'] = short(r.get('msg'))
         if 'time_sec' in st:
             r['ago'] = short(ago.human(datetime.fromtimestamp(int(st.time_sec)),
-                             precision=2, past_tense='{}', future_tense='{}'))
+                                       precision=2, past_tense='{}', future_tense='{}'))
         if 'branch' in r:
             r['branch'] = short(r['branch'])
         tab.add_row([r[f] if f in r else '' for f in fields])
@@ -253,7 +253,8 @@ def git_tree(*argv):
     elif args.rest:
         print(args.d, args.rest)
         print("git -C " + dirname(args.rest) + args.d + basename(args.rest))
-        os.system("git -C " + dirname(args.rest) + " " + args.d + " " + basename(args.rest))
+        os.system("git -C " + dirname(args.rest) + " " +
+                  args.d + " " + basename(args.rest))
     elif not isdir(args.d):
         for d, s in loaded.items() if loaded else {}:
             print(d)
@@ -279,7 +280,7 @@ def git_tree(*argv):
         else:
             f = open(args.export, "w")
         f.write(yaml.dump(status,
-                default_flow_style=False, default_style=''))
+                          default_flow_style=False, default_style=''))
         warn('Exported status into file ' + args.export)
     return ''
 
