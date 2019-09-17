@@ -168,8 +168,8 @@ def git_tree(*argv):
             if 'sha' in s:
                 if s.sha != r.commit('HEAD').hexsha:
                     s.state = 'different'
-                elif (not r.head.is_detached
-                        and r.active_branch.name == s.get('branch', '')):
+                elif (not r.head.is_detached and
+                      r.active_branch.name == s.get('branch', '')):
                     s.state = 'same'
                     same = True
                 else:
@@ -232,9 +232,9 @@ def git_tree(*argv):
                 st = git_get(p)
                 # Get only remote and standalone if requested
                 if (args.standalone_remote and
-                        ('remote' not in st
-                            or 'linked' in st
-                            or 'worktree' in st)):
+                        ('remote' not in st or
+                         'linked' in st or
+                         'worktree' in st)):
                     continue
                 status[p] = dict(st)
                 if 'compare' in args and loaded and p not in loaded:
