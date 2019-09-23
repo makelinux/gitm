@@ -5,8 +5,8 @@ But sometimes you can have dozens and hundreds of standalone git repositories wh
 would like to manage.
 
 Features:
- * replicates standalone repositories which are not included in repo or submodules.
 
+ * Replicates standalone repositories which are not included in repo or submodules.
 
  * Perform git command from outer directory
    Example:
@@ -26,5 +26,5 @@ This feature saves you from changing current directories between many repositori
 Getting help:
  * git-m --help
 
-TODO:
+TODD:
  * perform git command on all repositories in directory tree.

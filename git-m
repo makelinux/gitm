@@ -275,6 +275,7 @@ class GitM(object):
                 except (InvalidGitRepositoryError, GitCommandError, ValueError) as e:
                     warn('Error: ' + str(e) + (': ' + p if p not in str(e) else ''))
                     traceback.print_exc()
+
         log(self.loaded)
         if isdir(args.d) and (not self.loaded or 'compare' in args or 'export' in args):
             # don't scan if self.loaded and not in compare mode
@@ -315,7 +316,6 @@ class GitM(object):
             f.write(yaml.dump(status,
                               default_flow_style=False, default_style=''))
             warn('Exported status into file ' + args.export)
-        return ''
 
 
 if __name__ == "__main__":
