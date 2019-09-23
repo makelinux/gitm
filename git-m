@@ -28,8 +28,8 @@ def warn(a):
 def log(*_args, **kwargs):
     global args
     if args and 'verbose' in args and args.verbose:
-        print("%s:%d" % (inspect.stack()[1].filename,
-                         inspect.stack()[1].lineno),
+        s1 = inspect.stack()[1]
+        print("%s:%d %s < %s" % (s1.filename, s1.lineno, s1.function, inspect.stack()[2].function),
               str(*_args).rstrip(), file=sys.stderr, **kwargs)
 
 
