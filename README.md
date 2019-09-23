@@ -8,9 +8,23 @@ Features:
  * replicates standalone repositories which are not included in repo or submodules.
 
 
+ * Perform git command from outer directory
+   Example:
+
+Git refuses to work from outer directory:
+
+	$ git branch gitm/
+	fatal: not a git repository (or any parent up to mount point /)
+
+Gim-m changes directory to destination and performs requested command:
+
+	$ git m branch gitm/
+	 * master
+
+This feature saves you from changing current directories between many repositories.
+
 Getting help:
  * git-m --help
 
 TODO:
  * perform git command on all repositories in directory tree.
- * perform git command from outer directory

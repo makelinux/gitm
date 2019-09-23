@@ -225,10 +225,12 @@ class GitM(object):
 
         def git_for_subdir():
             log()
-            print(args.d, argv)
-            cmd = ' '.join(["git -C", dirname(argv[-1]), args.d] + argv[:-1] + [basename(argv[-1])])
+            #print(args.d, argv)
+            cmd = ' '.join(["git -C", dirname(argv[-1]), args.d] +
+                           argv[:-1] + [basename(argv[-1])])
             log(cmd)
-            os.system(cmd)
+            ret = os.system(cmd)
+            return os.WEXITSTATUS(ret)
 
         def git_for_each():
             log()
@@ -278,7 +280,7 @@ class GitM(object):
             # don't scan if self.loaded and not in compare mode
             scan(args.d)
         elif argv and exists(argv[-1]):
-            git_for_subdir()
+            return git_for_subdir()
         elif not isdir(args.d):
             return git_for_each()
 
