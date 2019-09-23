@@ -20,7 +20,7 @@ check()
 }
 
 rm -rf tmp gitm-tmp standalone-empty-tmp status.yaml > /dev/null
-git clone git@github.com:makelinux/gitm.git gitm-tmp
+git clone -q git@github.com:makelinux/gitm.git gitm-tmp
 git init standalone-empty-tmp > /dev/null
 
 check './git-m --export | grep -q standalone-empty-tmp'
@@ -30,7 +30,7 @@ check './git-m --csv | grep -q standalone-empty-tmp'
 test -s status.yaml
 mkdir tmp
 cp status.yaml tmp
-pushd tmp 2> /dev/null
+pushd tmp > /dev/null
 
 check '../git-m --import | grep -q same'
 check '../git-m --csv | grep -q ".*,.*"'
