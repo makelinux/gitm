@@ -7,6 +7,7 @@ import json
 import yaml
 import ago
 import sys
+from sys import *
 import argparse
 import inspect
 import traceback
@@ -26,7 +27,7 @@ def warn(a):
 
 def log(*_args, **kwargs):
     global args
-    if args.verbose:
+    if args and 'verbose' in args and args.verbose:
         print("%s:%d" % (inspect.stack()[1].filename,
                          inspect.stack()[1].lineno),
               str(*_args).rstrip(), file=sys.stderr, **kwargs)
@@ -69,221 +70,244 @@ def short(s):
     return s
 
 
-def git_tree(*argv):
+class GitM(object):
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--table', nargs='?', default=argparse.SUPPRESS)
-    parser.add_argument('--sha', nargs='?', default=argparse.SUPPRESS,
-                        help='print sha hashes in format of sha1sum utility'
-                        'optionally to a file')
-    parser.add_argument('--csv', nargs='?', default=argparse.SUPPRESS,
-                        help='print in format csv'
-                        'optionally to a file')
-    parser.add_argument('--json', nargs='?', default=argparse.SUPPRESS)
-    parser.add_argument('--export', nargs='?', default=argparse.SUPPRESS,
-                        help='scans directory tree and saves results status.yaml')
-    parser.add_argument('--compare', nargs='?', default=argparse.SUPPRESS,
-                        help='scans directory tree and compares with status.yaml')
-    parser.add_argument('--import', nargs='?', default=argparse.SUPPRESS,
-                        help='scans directory tree and synchronizes with status.yaml')
-    parser.add_argument('--verbose', action='store_true')
-    parser.add_argument('--standalone_remote', action='store_true',
-                        help='Skips repositories linked (not standalone) and without remotes. '
-                        'Leaves only unlinked standalone with remotes. '
-                        'Linked reps belong to git submodules or repo. '
-                        'This reps can be replicated with parent git or repo. '
-                        'Reps without remote can\'t be synced via remote.')
-    parser.add_argument('d', nargs='?', default='.')
-    parser.add_argument('rest', nargs='?')
-    global args
-    args = parser.parse_args()
-    status = {}
+    def __init__(self):
+        self.loaded = self.out = self.tab = None
 
-    if 'csv' in args:
-        if not args.csv:
-            args.csv = "status.csv"
-        if args.csv == '-':
-            csv = sys.stdout
-        else:
-            csv = open(args.csv, "w")
+        pass
 
-    def print_csv(p, st):
-        print("%s, %s, %d, %s, %s, %s, %s"
-              % (p, st.get('datetime', ''), st.get('count', 0), st.get('sha', ''), '"%s"' %
-                 (st.get('msg', '')),
-                 st.get('worktree', st.get('linked', 'standalone')),
-                 st.get('remote', '') + ' ' + st.get('url', 'local')))
+    def main(self):
 
-    def print_sha(p, st):
-        print("%s  %s" % (st.sha, p)) if 'sha' in st else 0
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--table', nargs='?', default=argparse.SUPPRESS)
+        parser.add_argument('--sha', nargs='?', default=argparse.SUPPRESS,
+                            help='print sha hashes in format of sha1sum utility'
+                            'optionally to a file')
+        parser.add_argument('--csv', nargs='?', default=argparse.SUPPRESS,
+                            help='print in format csv'
+                            'optionally to a file')
+        parser.add_argument('--json', nargs='?', default=argparse.SUPPRESS)
+        parser.add_argument('--export', nargs='?', default=argparse.SUPPRESS,
+                            help='scans directory tree and saves results status.yaml')
+        parser.add_argument('--compare', nargs='?', default=argparse.SUPPRESS,
+                            help='scans directory tree and compares with status.yaml')
+        parser.add_argument('--import', nargs='?', default=argparse.SUPPRESS,
+                            help='scans directory tree and synchronizes with status.yaml')
+        parser.add_argument('--verbose', action='store_true')
+        parser.add_argument('--standalone_remote', action='store_true',
+                            help='Skips repositories linked (not standalone) and without remotes. '
+                            'Leaves only unlinked standalone with remotes. '
+                            'Linked reps belong to git submodules or repo. '
+                            'This reps can be replicated with parent git or repo. '
+                            'Reps without remote can\'t be synced via remote.')
+        parser.add_argument('d', nargs='?', default='.')
+        parser.add_argument('rest', nargs='?')
+        global args, argv
+        args = None
+        argv = argv[1:]
+        while argv:
+            log(argv)
+            args = parser.parse_args([argv[0]], args)
+            argv = argv[1:]
+            log(args)
+            if not isdir(args.d):
+                break
 
-    def table_add_row(p, st):
-        r = {}
-        r['dir'] = p
-        r.update(dict(st))
-        r['msg'] = short(r.get('msg'))
-        if 'time_sec' in st:
-            r['ago'] = short(ago.human(datetime.fromtimestamp(int(st.time_sec)),
-                                       precision=2, past_tense='{}', future_tense='{}'))
-        if 'branch' in r:
-            r['branch'] = short(r['branch'])
-        tab.add_row([r[f] if f in r else '' for f in fields])
+        status = {}
 
-    def git_import(d, s):
-        if 'import' not in args or 'remote' not in s:
-            return
-        if exists(d + '/.git'):
-            r = Repo(d)
-        else:
+        if 'csv' in args:
+            if not args.csv:
+                args.csv = "status.csv"
+            if args.csv == '-':
+                csv = sys.stdout
+            else:
+                csv = open(args.csv, "w")
+
+        def print_csv(p, st):
+            print("%s, %s, %d, %s, %s, %s, %s"
+                  % (p, st.get('datetime', ''), st.get('count', 0), st.get('sha', ''), '"%s"' %
+                     (st.get('msg', '')),
+                     st.get('worktree', st.get('linked', 'standalone')),
+                     st.get('remote', '') + ' ' + st.get('url', 'local')))
+
+        def print_sha(p, st):
+            print("%s  %s" % (st.sha, p)) if 'sha' in st else 0
+
+        def table_add_row(p, st):
+            r = {}
+            r['dir'] = p
+            r.update(dict(st))
+            r['msg'] = short(r.get('msg'))
+            if 'time_sec' in st:
+                r['ago'] = short(ago.human(datetime.fromtimestamp(int(st.time_sec)),
+                                           precision=2, past_tense='{}', future_tense='{}'))
+            if 'branch' in r:
+                r['branch'] = short(r['branch'])
+            self.tab.add_row([r[f] if f in r else '' for f in fields])
+
+        def git_import(d, s):
+            if 'import' not in args or 'remote' not in s:
+                return
+            if exists(d + '/.git'):
+                r = Repo(d)
+            else:
+                try:
+                    r = Repo.clone_from(s.url, d)
+                except (AttributeError, GitCommandError) as e:
+                    r = Repo.init(d)
+            if s.remote not in [a.name for a in r.remotes]:
+                r.create_remote(s.remote, s.url)
+                r.git.fetch(s.remote)
+            if 'branch' in s:
+                r.git.checkout(s.branch)
+            if 'sha' not in s:
+                return
             try:
-                r = Repo.clone_from(s.url, d)
-            except (AttributeError, GitCommandError) as e:
-                r = Repo.init(d)
-        if s.remote not in [a.name for a in r.remotes]:
-            r.create_remote(s.remote, s.url)
-            r.git.fetch(s.remote)
-        if 'branch' in s:
-            r.git.checkout(s.branch)
-        if 'sha' not in s:
-            return
-        try:
-            if s.sha != r.commit('HEAD').hexsha:
-                r.git.checkout(s.sha)
-            s.state = 'imported'
-        except GitCommandError:
-            s.state = 'failed'
-            pass
-        # assure same
-        if s.sha == r.commit('HEAD').hexsha:
-            s.state += ' same'
-
-    def git_compare(d, s):
-        same = False
-        s = Munch(s)
-        if not exists(d + '/.git'):
-            s.state = 'absent'
-            log(d)
-        else:
-            r = Repo(d)
-            if 'sha' in s:
                 if s.sha != r.commit('HEAD').hexsha:
-                    s.state = 'different'
-                elif (not r.head.is_detached and
-                      r.active_branch.name == s.get('branch', '')):
-                    s.state = 'same'
-                    same = True
-                else:
-                    s.state = 'same detached'
-        if not same:
-            git_import(d, s)
-        out(d, s)
-        status[d] = s
+                    r.git.checkout(s.sha)
+                s.state = 'imported'
+            except GitCommandError:
+                s.state = 'failed'
+                pass
+            # assure same
+            if s.sha == r.commit('HEAD').hexsha:
+                s.state += ' same'
 
-    loaded = out = tab = None
+        def git_compare(d, s):
+            same = False
+            s = Munch(s)
+            if not exists(d + '/.git'):
+                s.state = 'absent'
+                log(d)
+            else:
+                r = Repo(d)
+                if 'sha' in s:
+                    if s.sha != r.commit('HEAD').hexsha:
+                        s.state = 'different'
+                    elif (not r.head.is_detached and
+                          r.active_branch.name == s.get('branch', '')):
+                        s.state = 'same'
+                        same = True
+                    else:
+                        s.state = 'same detached'
+            if not same:
+                git_import(d, s)
+            self.out(d, s)
+            status[d] = s
 
-    if 'compare' in args:
-        if not args.compare:
-            args.compare = "status.yaml"
-            if not isfile(args.compare):
-                args.compare = "status.json"
-        log(args.compare)
-        with open(args.compare) as f:
-            if args.compare.endswith('.yaml'):
-                loaded = Munch(yaml.load(f))
-            if args.compare.endswith('.json'):
-                loaded = Munch(json.load(f))
-    else:
-        if isfile('status.yaml'):
-            with open('status.yaml') as f:
-                loaded = Munch(yaml.load(f))
+        if 'compare' in args:
+            if not args.compare:
+                args.compare = "status.yaml"
+                if not isfile(args.compare):
+                    args.compare = "status.json"
+            log(args.compare)
+            with open(args.compare) as f:
+                if args.compare.endswith('.yaml'):
+                    self.loaded = Munch(yaml.load(f))
+                if args.compare.endswith('.json'):
+                    self.loaded = Munch(json.load(f))
+        else:
+            if isfile('status.yaml'):
+                with open('status.yaml') as f:
+                    self.loaded = Munch(yaml.load(f))
 
-    out = print_sha if 'sha' in args else out
-    out = print_csv if 'csv' in args else out
+        self.out = print_sha if 'sha' in args else self.out
+        self.out = print_csv if 'csv' in args else self.out
 
-    if not out:  # default output is table
-        fields = ("dir ago count revision hash msg branch remote url linked state"
-                  .split())
-        tab = PrettyTable(fields, border=False, header=False, align="l")
-        tab.align = "l"
-        out = table_add_row
+        if not self.out:  # default output is table
+            fields = ("dir ago count revision hash msg branch remote url linked state"
+                      .split())
+            self.tab = PrettyTable(fields, border=False, header=False, align="l")
+            self.tab.align = "l"
+            self.out = table_add_row
 
-    for d, s in loaded.items() if loaded else {}:
-        try:
-            git_compare(d, s)
-        except (InvalidGitRepositoryError, GitCommandError,
-                ValueError) as e:
-            warn('Error: ' + str(e) +
-                 (': ' + d if d not in str(e) else ''))
-            traceback.print_exc()
-
-    def scan(d):
-        warn('Scanning directory tree ...')
-        for path, dirs, files in os.walk(d):
-            (dir, base) = split(path)
-            p = re.sub(r'^\.\/', '', path)
-            log(p)
-            if base in ['.git', 'tmp']:
-                dirs[:] = []  # prune
-                continue
-            if not ('.git' in files or '.git' in dirs):
-                continue
-
+        for d, s in self.loaded.items() if self.loaded else {}:
             try:
-                st = git_get(p)
-                # Get only remote and standalone if requested
-                if (args.standalone_remote and
-                        ('remote' not in st or
-                         'linked' in st or
-                         'worktree' in st)):
-                    continue
-                status[p] = dict(st)
-                if 'compare' in args and loaded and p not in loaded:
-                    # only here and not in compare
-                    st.state = 'undesired'
-                    out(p, st)
-                if not loaded:
-                    out(p, st)
-            except (InvalidGitRepositoryError, GitCommandError, ValueError) as e:
-                warn('Error: ' + str(e) + (': ' + p if p not in str(e) else ''))
+                git_compare(d, s)
+            except (InvalidGitRepositoryError, GitCommandError,
+                    ValueError) as e:
+                warn('Error: ' + str(e) +
+                     (': ' + d if d not in str(e) else ''))
                 traceback.print_exc()
-    log(loaded)
-    if isdir(args.d) and (not loaded or 'compare' in args or 'export' in args):
-        # don't scan if loaded and not in compare mode
-        scan(args.d)
-    elif args.rest:
-        print(args.d, args.rest)
-        print("git -C " + dirname(args.rest) + args.d + basename(args.rest))
-        os.system("git -C " + dirname(args.rest) + " " +
-                  args.d + " " + basename(args.rest))
-    elif not isdir(args.d):
-        for d, s in loaded.items() if loaded else {}:
-            print(d)
-            os.system("git -C " + d + " " + args.d + " ")
-        # status = loaded.status
 
-    print(tab) if tab else 0
+        def git_for_subdir():
+            log()
+            print(args.d, argv)
+            cmd = ' '.join(["git -C", dirname(argv[-1]), args.d] + argv[:-1] + [basename(argv[-1])])
+            log(cmd)
+            os.system(cmd)
 
-    if 'json' in args:
-        if not args.json:
-            args.json = "status.json"
-        if args.json == '-':
-            f = sys.stdout
-        else:
-            f = open(args.json, "w")
-        f.write(json.dumps(status, indent=4, default=str) + "\n")
+        def git_for_each():
+            log()
+            for d, s in self.loaded.items() if self.loaded else {}:
+                print(d, argv)
+                os.system(' '.join(["git -C", d, args.d] + argv))
+            # status = self.loaded.status
 
-    if 'export' in args:
-        if not args.export:
-            args.export = "status.yaml"
-        if args.export == '-':
-            f = sys.stdout
-        else:
-            f = open(args.export, "w")
-        f.write(yaml.dump(status,
-                          default_flow_style=False, default_style=''))
-        warn('Exported status into file ' + args.export)
-    return ''
+        def scan(d):
+            warn('Scanning directory tree ...')
+            for path, dirs, files in os.walk(d):
+                (dir, base) = split(path)
+                p = re.sub(r'^\.\/', '', path)
+                log(p)
+                if base in ['.git', 'tmp']:
+                    dirs[:] = []  # prune
+                    continue
+                if not ('.git' in files or '.git' in dirs):
+                    continue
+
+                try:
+                    st = git_get(p)
+                    # Get only remote and standalone if requested
+                    if (args.standalone_remote and
+                            ('remote' not in st or
+                             'linked' in st or
+                             'worktree' in st)):
+                        continue
+                    status[p] = dict(st)
+                    if 'compare' in args and self.loaded and p not in self.loaded:
+                        # only here and not in compare
+                        st.state = 'undesired'
+                        self.out(p, st)
+                    if not self.loaded:
+                        self.out(p, st)
+                except (InvalidGitRepositoryError, GitCommandError, ValueError) as e:
+                    warn('Error: ' + str(e) + (': ' + p if p not in str(e) else ''))
+                    traceback.print_exc()
+        log(self.loaded)
+        if isdir(args.d) and (not self.loaded or 'compare' in args or 'export' in args):
+            # don't scan if self.loaded and not in compare mode
+            scan(args.d)
+        elif exists(argv[-1]):
+            git_for_subdir()
+        elif not isdir(args.d):
+            git_for_each()
+
+        print(self.tab) if self.tab else 0
+
+        if 'json' in args:
+            if not args.json:
+                args.json = "status.json"
+            if args.json == '-':
+                f = sys.stdout
+            else:
+                f = open(args.json, "w")
+            f.write(json.dumps(status, indent=4, default=str) + "\n")
+
+        log(args)
+        if 'export' in args:
+            if not args.export:
+                args.export = "status.yaml"
+            if args.export == '-':
+                f = sys.stdout
+            else:
+                f = open(args.export, "w")
+            f.write(yaml.dump(status,
+                              default_flow_style=False, default_style=''))
+            warn('Exported status into file ' + args.export)
+        return ''
 
 
 if __name__ == "__main__":
-    git_tree()
+    GitM().main()
