@@ -19,15 +19,17 @@ check()
 	fi
 }
 
-rm -rf tmp gitm-tmp standalone-empty-tmp status.yaml > /dev/null
+rm -rf tmp gitm-tmp* standalone-empty-tmp status.yaml > /dev/null
 git clone -q git@github.com:makelinux/gitm.git gitm-tmp
+\cp -a gitm-tmp gitm-tmp2
 git init standalone-empty-tmp > /dev/null
 
 check './git-m --export | grep -q standalone-empty-tmp'
 
 check './git-m --csv | grep -q standalone-empty-tmp'
 
-test -s status.yaml
+check 'test -s status.yaml'
+
 mkdir tmp
 cp status.yaml tmp
 pushd tmp > /dev/null
@@ -43,6 +45,11 @@ git init git-second-tmp > /dev/null
 ../git-m --compare
 check '../git-m --compare | grep -q "git-second-tmp.*undesired"'
 check '../git-m --compare | grep -q "standalone-empty-tmp.*absent"'
+
+echo test git_for_each:
+rm status.yaml
+../git-m --export
+check '../git-m describe --always'
 
 popd 2> /dev/null
 

@@ -7,6 +7,7 @@ import json
 import yaml
 import ago
 import sys
+import signal
 from sys import *
 import argparse
 import inspect
@@ -231,10 +232,16 @@ class GitM(object):
 
         def git_for_each():
             log()
+            ret = 0
             for d, s in self.loaded.items() if self.loaded else {}:
-                print(d, argv)
-                os.system(' '.join(["git -C", d, args.d] + argv))
-            # status = self.loaded.status
+                print("project", d)
+                r = os.system(' '.join(["git -C", d, args.d] + argv))
+                if os.WTERMSIG(r) == signal.SIGINT:
+                    raise KeyboardInterrupt
+                log(r)
+                if r:
+                    ret = r
+            return os.WEXITSTATUS(ret)
 
         def scan(d):
             warn('Scanning directory tree ...')
@@ -273,7 +280,7 @@ class GitM(object):
         elif argv and exists(argv[-1]):
             git_for_subdir()
         elif not isdir(args.d):
-            git_for_each()
+            return git_for_each()
 
         for d, s in self.loaded.items() if self.loaded else {}:
             try:
@@ -310,4 +317,6 @@ class GitM(object):
 
 
 if __name__ == "__main__":
-    GitM().main()
+    err = GitM().main()
+    if err:
+        sys.exit(err)
