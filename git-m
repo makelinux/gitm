@@ -222,15 +222,6 @@ class GitM(object):
             self.tab.align = "l"
             self.out = table_add_row
 
-        for d, s in self.loaded.items() if self.loaded else {}:
-            try:
-                git_compare(d, s)
-            except (InvalidGitRepositoryError, GitCommandError,
-                    ValueError) as e:
-                warn('Error: ' + str(e) +
-                     (': ' + d if d not in str(e) else ''))
-                traceback.print_exc()
-
         def git_for_subdir():
             log()
             print(args.d, argv)
@@ -283,6 +274,15 @@ class GitM(object):
             git_for_subdir()
         elif not isdir(args.d):
             git_for_each()
+
+        for d, s in self.loaded.items() if self.loaded else {}:
+            try:
+                git_compare(d, s)
+            except (InvalidGitRepositoryError, GitCommandError,
+                    ValueError) as e:
+                warn('Error: ' + str(e) +
+                     (': ' + d if d not in str(e) else ''))
+                traceback.print_exc()
 
         print(self.tab) if self.tab else 0
 
