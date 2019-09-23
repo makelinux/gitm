@@ -279,7 +279,7 @@ class GitM(object):
         if isdir(args.d) and (not self.loaded or 'compare' in args or 'export' in args):
             # don't scan if self.loaded and not in compare mode
             scan(args.d)
-        elif exists(argv[-1]):
+        elif argv and exists(argv[-1]):
             git_for_subdir()
         elif not isdir(args.d):
             git_for_each()
