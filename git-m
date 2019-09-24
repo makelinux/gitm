@@ -286,6 +286,30 @@ class GitM(object):
                          (': ' + d if d not in str(e) else ''))
                     traceback.print_exc()
 
+        def output():
+            print(self.tab) if self.tab else 0
+
+            if 'json' in args:
+                if not args.json:
+                    args.json = "status.json"
+                if args.json == '-':
+                    f = sys.stdout
+                else:
+                    f = open(args.json, "w")
+                f.write(json.dumps(self.status, indent=4, default=str) + "\n")
+
+            log(args)
+            if 'export' in args:
+                if not args.export:
+                    args.export = "status.yaml"
+                if args.export == '-':
+                    f = sys.stdout
+                else:
+                    f = open(args.export, "w")
+                f.write(yaml.dump(self.status,
+                                  default_flow_style=False, default_style=''))
+                warn('Exported status into file ' + args.export)
+
         parse_args()
         process_args()
         log(self.loaded)
@@ -300,29 +324,7 @@ class GitM(object):
 
         # do comprare without scan even when 'compare' not in args.
         compare()
-
-        print(self.tab) if self.tab else 0
-
-        if 'json' in args:
-            if not args.json:
-                args.json = "status.json"
-            if args.json == '-':
-                f = sys.stdout
-            else:
-                f = open(args.json, "w")
-            f.write(json.dumps(self.status, indent=4, default=str) + "\n")
-
-        log(args)
-        if 'export' in args:
-            if not args.export:
-                args.export = "status.yaml"
-            if args.export == '-':
-                f = sys.stdout
-            else:
-                f = open(args.export, "w")
-            f.write(yaml.dump(self.status,
-                              default_flow_style=False, default_style=''))
-            warn('Exported status into file ' + args.export)
+        output()
 
 
 if __name__ == "__main__":
