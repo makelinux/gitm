@@ -14,12 +14,18 @@ check()
 		echo -e "\033[2;32mOK \033[0;39m";
 		let successes+=1;
 	else
+		local ret=$?
 		echo -e "\033[2;31mError \033[0;39m $?"
 		let errors+=1; 
+		return $ret
 	fi
 }
 
 rm -rf tmp gitm-tmp* standalone-empty-tmp status.yaml > /dev/null
+
+# Sanity check
+check ./git-m || exit
+
 git clone -q git@github.com:makelinux/gitm.git gitm-tmp
 \cp -a gitm-tmp gitm-tmp2
 git init standalone-empty-tmp > /dev/null
