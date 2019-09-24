@@ -67,6 +67,25 @@ def git_get(g):
     return m
 
 
+def git_compare(d, s):
+    same = False
+    if not exists(d + '/.git'):
+        s.state = 'absent'
+        log(d)
+    else:
+        r = Repo(d)
+        if 'sha' in s:
+            if s.sha != r.commit('HEAD').hexsha:
+                s.state = 'different'
+            elif (not r.head.is_detached and
+                  r.active_branch.name == s.get('branch', '')):
+                s.state = 'same'
+                same = True
+            else:
+                s.state = 'same detached'
+    return same
+
+
 def git_import(d, s):
     if 'remote' not in s:
         return
@@ -167,28 +186,6 @@ class GitM(object):
                 r['branch'] = short(r['branch'])
             self.tab.add_row([r[f] if f in r else '' for f in fields])
 
-        def git_compare(d, s):
-            same = False
-            s = Munch(s)
-            if not exists(d + '/.git'):
-                s.state = 'absent'
-                log(d)
-            else:
-                r = Repo(d)
-                if 'sha' in s:
-                    if s.sha != r.commit('HEAD').hexsha:
-                        s.state = 'different'
-                    elif (not r.head.is_detached and
-                          r.active_branch.name == s.get('branch', '')):
-                        s.state = 'same'
-                        same = True
-                    else:
-                        s.state = 'same detached'
-            if not same and 'import' in args:
-                git_import(d, s)
-            self.out(d, s)
-            self.status[d] = s
-
         def process_args():
             if 'compare' in args:
                 if not args.compare:
@@ -284,7 +281,11 @@ class GitM(object):
 
         for d, s in self.loaded.items() if self.loaded else {}:
             try:
-                git_compare(d, s)
+                s = Munch(s)
+                if not git_compare(d, s) and 'import' in args:
+                    git_import(d, s)
+                self.out(d, s)
+                self.status[d] = s
             except (InvalidGitRepositoryError, GitCommandError,
                     ValueError) as e:
                 warn('Error: ' + str(e) +
