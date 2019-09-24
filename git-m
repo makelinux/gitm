@@ -21,6 +21,8 @@ from git.repo.base import Repo
 
 args = None
 
+fields = ("dir ago count revision hash msg branch remote url linked state"
+        .split())
 
 def warn(a):
     print(a, file=sys.stderr)
@@ -187,42 +189,39 @@ class GitM(object):
             self.out(d, s)
             self.status[d] = s
 
-        parse_args()
-
-        if 'compare' in args:
-            if not args.compare:
-                args.compare = "status.yaml"
-                if not isfile(args.compare):
-                    args.compare = "status.json"
-            log(args.compare)
-            with open(args.compare) as f:
-                if args.compare.endswith('.yaml'):
-                    self.loaded = Munch(yaml.load(f))
-                if args.compare.endswith('.json'):
-                    self.loaded = Munch(json.load(f))
-        else:
-            if isfile('status.yaml'):
-                with open('status.yaml') as f:
-                    self.loaded = Munch(yaml.load(f))
-
-        self.out = print_sha if 'sha' in args else self.out
-
-        if 'csv' in args:
-            if not args.csv:
-                args.csv = "status.csv"
-            if args.csv == '-':
-                csv = sys.stdout
+        def process_args():
+            if 'compare' in args:
+                if not args.compare:
+                    args.compare = "status.yaml"
+                    if not isfile(args.compare):
+                        args.compare = "status.json"
+                log(args.compare)
+                with open(args.compare) as f:
+                    if args.compare.endswith('.yaml'):
+                        self.loaded = Munch(yaml.load(f))
+                    if args.compare.endswith('.json'):
+                        self.loaded = Munch(json.load(f))
             else:
-                csv = open(args.csv, "w")
+                if isfile('status.yaml'):
+                    with open('status.yaml') as f:
+                        self.loaded = Munch(yaml.load(f))
 
-        self.out = print_csv if 'csv' in args else self.out
+            self.out = print_sha if 'sha' in args else self.out
 
-        if not self.out:  # default output is table
-            fields = ("dir ago count revision hash msg branch remote url linked state"
-                      .split())
-            self.tab = PrettyTable(fields, border=False, header=False, align="l")
-            self.tab.align = "l"
-            self.out = table_add_row
+            if 'csv' in args:
+                if not args.csv:
+                    args.csv = "status.csv"
+                if args.csv == '-':
+                    csv = sys.stdout
+                else:
+                    csv = open(args.csv, "w")
+
+            self.out = print_csv if 'csv' in args else self.out
+
+            if not self.out:  # default output is table
+                self.tab = PrettyTable(fields, border=False, header=False, align="l")
+                self.tab.align = "l"
+                self.out = table_add_row
 
         def git_for_subdir():
             log()
@@ -277,6 +276,9 @@ class GitM(object):
                     warn('Error: ' + str(e) + (': ' + p if p not in str(e) else ''))
                     traceback.print_exc()
 
+
+        parse_args()
+        process_args()
         log(self.loaded)
         if isdir(args.d) and (not self.loaded or 'compare' in args or 'export' in args):
             # don't scan if self.loaded and not in compare mode
