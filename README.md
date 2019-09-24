@@ -23,8 +23,18 @@ Gim-m changes directory to destination and performs requested command:
 
 This feature saves you from changing current directories between many repositories.
 
+ * Perform git command on all repositories in directory tree:
+
+	$ git m describe --always --all
+	project .
+	heads/master
+	project A
+	heads/master
+	project B
+	heads/master
+
+
 Getting help:
  * git-m --help
 
-TODD:
- * perform git command on all repositories in directory tree.
+TODO:
