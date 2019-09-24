@@ -32,7 +32,7 @@ git init standalone-empty-tmp > /dev/null
 
 check './git-m --export | grep -q standalone-empty-tmp'
 
-check './git-m --csv | grep -q standalone-empty-tmp'
+check './git-m --csv | grep -q "standalone-empty-tmp,"'
 
 check 'test -s status.yaml'
 
