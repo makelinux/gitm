@@ -272,6 +272,20 @@ class GitM(object):
                     traceback.print_exc()
             return status
 
+        def compare():
+            for d, s in self.loaded.items() if self.loaded else {}:
+                try:
+                    s = Munch(s)
+                    if not git_compare(d, s) and 'import' in args:
+                        git_import(d, s)
+                    self.out(d, s)
+                    self.status[d] = s
+                except (InvalidGitRepositoryError, GitCommandError,
+                        ValueError) as e:
+                    warn('Error: ' + str(e) +
+                         (': ' + d if d not in str(e) else ''))
+                    traceback.print_exc()
+
         parse_args()
         process_args()
         log(self.loaded)
@@ -284,18 +298,8 @@ class GitM(object):
         elif not isdir(args.d):
             return git_for_each()
 
-        for d, s in self.loaded.items() if self.loaded else {}:
-            try:
-                s = Munch(s)
-                if not git_compare(d, s) and 'import' in args:
-                    git_import(d, s)
-                self.out(d, s)
-                self.status[d] = s
-            except (InvalidGitRepositoryError, GitCommandError,
-                    ValueError) as e:
-                warn('Error: ' + str(e) +
-                     (': ' + d if d not in str(e) else ''))
-                traceback.print_exc()
+        # do comprare without scan even when 'compare' not in args.
+        compare()
 
         print(self.tab) if self.tab else 0
 
