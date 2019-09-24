@@ -67,6 +67,35 @@ def git_get(g):
     return m
 
 
+def git_import(d, s):
+    if 'remote' not in s:
+        return
+    if exists(d + '/.git'):
+        r = Repo(d)
+    else:
+        try:
+            r = Repo.clone_from(s.url, d)
+        except (AttributeError, GitCommandError) as e:
+            r = Repo.init(d)
+    if s.remote not in [a.name for a in r.remotes]:
+        r.create_remote(s.remote, s.url)
+        r.git.fetch(s.remote)
+    if 'branch' in s:
+        r.git.checkout(s.branch)
+    if 'sha' not in s:
+        return
+    try:
+        if s.sha != r.commit('HEAD').hexsha:
+            r.git.checkout(s.sha)
+        s.state = 'imported'
+    except GitCommandError:
+        s.state = 'failed'
+        pass
+    # assure same
+    if s.sha == r.commit('HEAD').hexsha:
+        s.state += ' same'
+
+
 def short(s):
     if s and len(s) > 16:
         return s[:15] + '…'
@@ -138,34 +167,6 @@ class GitM(object):
                 r['branch'] = short(r['branch'])
             self.tab.add_row([r[f] if f in r else '' for f in fields])
 
-        def git_import(d, s):
-            if 'import' not in args or 'remote' not in s:
-                return
-            if exists(d + '/.git'):
-                r = Repo(d)
-            else:
-                try:
-                    r = Repo.clone_from(s.url, d)
-                except (AttributeError, GitCommandError) as e:
-                    r = Repo.init(d)
-            if s.remote not in [a.name for a in r.remotes]:
-                r.create_remote(s.remote, s.url)
-                r.git.fetch(s.remote)
-            if 'branch' in s:
-                r.git.checkout(s.branch)
-            if 'sha' not in s:
-                return
-            try:
-                if s.sha != r.commit('HEAD').hexsha:
-                    r.git.checkout(s.sha)
-                s.state = 'imported'
-            except GitCommandError:
-                s.state = 'failed'
-                pass
-            # assure same
-            if s.sha == r.commit('HEAD').hexsha:
-                s.state += ' same'
-
         def git_compare(d, s):
             same = False
             s = Munch(s)
@@ -183,7 +184,7 @@ class GitM(object):
                         same = True
                     else:
                         s.state = 'same detached'
-            if not same:
+            if not same and 'import' in args:
                 git_import(d, s)
             self.out(d, s)
             self.status[d] = s
