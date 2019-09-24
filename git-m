@@ -161,6 +161,17 @@ def parse_args():
             break
 
 
+def print_csv(p, st):
+    print("%s, %s, %d, %s, %s, %s, %s"
+          % (p, st.get('datetime', ''), st.get('count', 0),
+             st.get('sha', ''), '"%s"' % (st.get('msg', '')),
+             st.get('worktree', st.get('linked', 'standalone')),
+             st.get('remote', '') + ' ' + st.get('url', 'local')))
+
+def print_sha(p, st):
+    print("%s  %s" % (st.sha, p)) if 'sha' in st else 0
+
+
 class GitM(object):
 
     def __init__(self):
@@ -168,16 +179,6 @@ class GitM(object):
         self.status = {}
 
     def main(self):
-
-        def print_csv(p, st):
-            print("%s, %s, %d, %s, %s, %s, %s"
-                  % (p, st.get('datetime', ''), st.get('count', 0),
-                     st.get('sha', ''), '"%s"' % (st.get('msg', '')),
-                     st.get('worktree', st.get('linked', 'standalone')),
-                     st.get('remote', '') + ' ' + st.get('url', 'local')))
-
-        def print_sha(p, st):
-            print("%s  %s" % (st.sha, p)) if 'sha' in st else 0
 
         def table_add_row(p, st):
             r = {}
