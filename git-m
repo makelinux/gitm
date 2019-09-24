@@ -117,14 +117,6 @@ class GitM(object):
 
         status = {}
 
-        if 'csv' in args:
-            if not args.csv:
-                args.csv = "status.csv"
-            if args.csv == '-':
-                csv = sys.stdout
-            else:
-                csv = open(args.csv, "w")
-
         def print_csv(p, st):
             print("%s, %s, %d, %s, %s, %s, %s"
                   % (p, st.get('datetime', ''), st.get('count', 0), st.get('sha', ''), '"%s"' %
@@ -214,6 +206,15 @@ class GitM(object):
                     self.loaded = Munch(yaml.load(f))
 
         self.out = print_sha if 'sha' in args else self.out
+
+        if 'csv' in args:
+            if not args.csv:
+                args.csv = "status.csv"
+            if args.csv == '-':
+                csv = sys.stdout
+            else:
+                csv = open(args.csv, "w")
+
         self.out = print_csv if 'csv' in args else self.out
 
         if not self.out:  # default output is table
