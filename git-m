@@ -70,6 +70,42 @@ def short(s):
         return s[:15] + '…'
     return s
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--table', nargs='?', default=argparse.SUPPRESS)
+    parser.add_argument('--sha', nargs='?', default=argparse.SUPPRESS,
+                        help='print sha hashes in format of sha1sum utility'
+                        'optionally to a file')
+    parser.add_argument('--csv', nargs='?', default=argparse.SUPPRESS,
+                        help='print in format csv'
+                        'optionally to a file')
+    parser.add_argument('--json', nargs='?', default=argparse.SUPPRESS)
+    parser.add_argument('--export', nargs='?', default=argparse.SUPPRESS,
+                        help='scans directory tree and saves results status.yaml')
+    parser.add_argument('--compare', nargs='?', default=argparse.SUPPRESS,
+                        help='scans directory tree and compares with status.yaml')
+    parser.add_argument('--import', nargs='?', default=argparse.SUPPRESS,
+                        help='scans directory tree and synchronizes with status.yaml')
+    parser.add_argument('--verbose', action='store_true')
+    parser.add_argument('--standalone_remote', action='store_true',
+                        help='Skips repositories linked (not standalone) and without remotes. '
+                        'Leaves only unlinked standalone with remotes. '
+                        'Linked reps belong to git submodules or repo. '
+                        'This reps can be replicated with parent git or repo. '
+                        'Reps without remote can\'t be synced via remote.')
+    parser.add_argument('d', nargs='?', default='.')
+    parser.add_argument('rest', nargs='?')
+    global args, argv
+    args = parser.parse_args('')
+    argv = argv[1:]
+    while argv:
+        log(argv)
+        args = parser.parse_args([argv[0]], args)
+        argv = argv[1:]
+        log(args)
+        if not isdir(args.d):
+            break
+
 
 class GitM(object):
 
@@ -78,41 +114,6 @@ class GitM(object):
         self.status = {}
 
     def main(self):
-
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--table', nargs='?', default=argparse.SUPPRESS)
-        parser.add_argument('--sha', nargs='?', default=argparse.SUPPRESS,
-                            help='print sha hashes in format of sha1sum utility'
-                            'optionally to a file')
-        parser.add_argument('--csv', nargs='?', default=argparse.SUPPRESS,
-                            help='print in format csv'
-                            'optionally to a file')
-        parser.add_argument('--json', nargs='?', default=argparse.SUPPRESS)
-        parser.add_argument('--export', nargs='?', default=argparse.SUPPRESS,
-                            help='scans directory tree and saves results status.yaml')
-        parser.add_argument('--compare', nargs='?', default=argparse.SUPPRESS,
-                            help='scans directory tree and compares with status.yaml')
-        parser.add_argument('--import', nargs='?', default=argparse.SUPPRESS,
-                            help='scans directory tree and synchronizes with status.yaml')
-        parser.add_argument('--verbose', action='store_true')
-        parser.add_argument('--standalone_remote', action='store_true',
-                            help='Skips repositories linked (not standalone) and without remotes. '
-                            'Leaves only unlinked standalone with remotes. '
-                            'Linked reps belong to git submodules or repo. '
-                            'This reps can be replicated with parent git or repo. '
-                            'Reps without remote can\'t be synced via remote.')
-        parser.add_argument('d', nargs='?', default='.')
-        parser.add_argument('rest', nargs='?')
-        global args, argv
-        args = parser.parse_args('')
-        argv = argv[1:]
-        while argv:
-            log(argv)
-            args = parser.parse_args([argv[0]], args)
-            argv = argv[1:]
-            log(args)
-            if not isdir(args.d):
-                break
 
         def print_csv(p, st):
             print("%s, %s, %d, %s, %s, %s, %s"
@@ -185,6 +186,8 @@ class GitM(object):
                 git_import(d, s)
             self.out(d, s)
             self.status[d] = s
+
+        parse_args()
 
         if 'compare' in args:
             if not args.compare:
