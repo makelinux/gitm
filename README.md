@@ -6,6 +6,9 @@ would like to manage.
 
 Features:
 
+ * Can be installed as git custom command:
+	$ git m -h
+
  * Replicates standalone repositories which are not included in repo or submodules.
 
  * Perform git command from outer directory
