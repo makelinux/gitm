@@ -280,7 +280,7 @@ class GitM(object):
                 if not git_compare(d, s) and 'import' in args:
                     git_import(d, s)
                 self.out(d, s)
-                self.status[d] = s
+                self.status[d] = dict(s)
             except (InvalidGitRepositoryError, GitCommandError,
                     ValueError) as e:
                 warn('Error: ' + str(e) +

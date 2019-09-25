@@ -31,6 +31,7 @@ git clone -q git@github.com:makelinux/gitm.git gitm-tmp
 git init standalone-empty-tmp > /dev/null
 
 check './git-m --export | grep -q standalone-empty-tmp'
+check 'grep -q "^.:\$" status.yaml'
 
 check './git-m --csv | grep -q "standalone-empty-tmp,"'
 
