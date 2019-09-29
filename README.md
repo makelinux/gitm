@@ -41,3 +41,4 @@ Getting help:
  * git-m --help
 
 TODO:
+ * Accept list of files as input. For example pipe from: find . -name '.git' -printf "%h\n"
