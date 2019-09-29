@@ -221,8 +221,18 @@ class GitM(object):
     def git_for_subdir(self):
         log()
         # print(args.d, argv)
-        cmd = ' '.join(["git -C", dirname(argv[-1]), args.d] +
-                       argv[:-1] + [basename(argv[-1])])
+        dir = arg = ''
+        if isfile(argv[-1]):
+            dir = dirname(argv[-1])
+            arg = basename(argv[-1])
+        elif isdir(argv[-1]):
+            dir = argv[-1]
+        else:
+            raise("Neither file or dir: " + dir)
+        log(dir)
+        log(arg)
+        cmd = ' '.join(["git -C", dir, args.d] +
+                       argv[:-1] + [arg])
         log(cmd)
         ret = os.system(cmd)
         return os.WEXITSTATUS(ret)

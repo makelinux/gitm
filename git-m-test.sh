@@ -55,7 +55,9 @@ check '../git-m --compare | grep -q "git-second-tmp.*undesired"'
 check '../git-m --compare | grep -q "standalone-empty-tmp.*absent"'
 
 echo test git_for_subdir:
+check '../git-m describe --always gitm-tmp'
 check '../git-m describe --always gitm-tmp/'
+check '../git-m log -n1 gitm-tmp/git-m | grep ^commit'
 
 echo test git_for_each:
 rm status.yaml
