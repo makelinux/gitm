@@ -3,7 +3,7 @@
 successes=0
 errors=0
 
-trap '(1>&2 echo -e $"\e[2;31mFAIL \e[0;39m ret=$? ${BASH_SOURCE[0]}:${LINENO} ${FUNCNAME[*]} $BASH_COMMAND")' ERR
+#trap '(1>&2 echo -e $"\e[2;31mFAIL \e[0;39m ret=$? ${BASH_SOURCE[0]}:${LINENO} ${FUNCNAME[*]} $BASH_COMMAND")' ERR
 
 #trap 'echo ${BASH_SOURCE[*]}:${BASH_LINENO[*]} ${FUNCNAME[*]} cmd: $BASH_COMMAND' DEBUG
 
@@ -15,7 +15,7 @@ check()
 		let successes+=1;
 	else
 		local ret=$?
-		echo -e "\033[2;31mError \033[0;39m $?"
+		echo -e "\033[2;31mError \033[0;39m $ret"
 		let errors+=1; 
 		return $ret
 	fi
@@ -45,6 +45,7 @@ check '../git-m --import | grep -q same'
 check '../git-m --csv | grep -q ".*,.*"'
 check '../git-m --sha | grep -q ".*  .*"'
 check '../git-m --compare | grep -q same'
+check 'grep -q "^.:\$" status.yaml'
 
 git init git-second-tmp > /dev/null
 (cd git-second-tmp; git commit --allow-empty -m empty; git checkout --detach; git branch -d master)
