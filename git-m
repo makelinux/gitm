@@ -65,8 +65,9 @@ def git_get(g):
     if not r.head.is_detached:
         m.branch = r.active_branch.name
     if r.remotes:
-        m.remote = r.remotes[0].name
-        m.url = r.remotes[0].url
+        m.remote = r.active_branch.tracking_branch().remote_name
+        m.url = r.remotes[m.remote].url
+        m.remote_sha = r.remotes[m.remote].refs.master.commit.hexsha
     return m
 
 
