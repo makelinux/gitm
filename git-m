@@ -206,7 +206,7 @@ class GitM(object):
                 if args.compare.endswith('.json'):
                     self.loaded = Munch(json.load(f))
         else:
-            if isfile('status.yaml'):
+            if 'export' not in args and isfile('status.yaml'):
                 with open('status.yaml') as f:
                     self.loaded = Munch(yaml.load(f))
 

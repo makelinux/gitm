@@ -60,7 +60,6 @@ check '../git-m describe --always gitm-tmp/'
 check '../git-m log -n1 gitm-tmp/git-m | grep ^commit'
 
 echo test git_for_each:
-rm status.yaml
 ../git-m --export
 check '../git-m describe --always'
 
