@@ -126,36 +126,37 @@ def short(s):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--table', nargs='?', default=argparse.SUPPRESS)
-    parser.add_argument('--sha', nargs='?', default=argparse.SUPPRESS,
-                        help='print sha hashes in format of sha1sum utility'
-                        'optionally to a file')
-    parser.add_argument('--csv', nargs='?', default=argparse.SUPPRESS,
-                        help='print in format csv')
-    parser.add_argument('--json', nargs='?', default=argparse.SUPPRESS)
-    parser.add_argument('--export', nargs='?', default=argparse.SUPPRESS,
-                        help='scans directory tree and saves results status.yaml')
-    parser.add_argument('--compare', nargs='?', default=argparse.SUPPRESS,
-                        help='scans directory tree and compares with status.yaml')
-    parser.add_argument('--import', nargs='?', default=argparse.SUPPRESS,
-                        help='scans directory tree and synchronizes with status.yaml')
-    parser.add_argument('--verbose', action='store_true')
-    parser.add_argument('--standalone_remote', action='store_true',
-                        help='Skips repositories linked '
-                        '(not standalone) and without remotes. '
-                        'Leaves only unlinked standalone with remotes. '
-                        'Linked reps belong to git submodules or repo. '
-                        'This reps can be replicated with parent git or repo. '
-                        'Reps without remote can\'t be synced via remote.')
-    parser.add_argument('d', nargs='?', default='.')
-    parser.add_argument('rest', nargs='?')
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--table', nargs='?', default=argparse.SUPPRESS)
+    ap.add_argument('--sha', nargs='?', default=argparse.SUPPRESS,
+                    help='print sha hashes in format of sha1sum utility'
+                    'optionally to a file')
+    ap.add_argument('--csv', nargs='?', default=argparse.SUPPRESS,
+                    help='print in format csv')
+    ap.add_argument('--json', nargs='?', default=argparse.SUPPRESS)
+    ap.add_argument('--export', nargs='?', default=argparse.SUPPRESS,
+                    help='scans directory tree and saves results status.yaml')
+    ap.add_argument('--compare', nargs='?', default=argparse.SUPPRESS,
+                    help='scans directory tree and compares with status.yaml')
+    ap.add_argument('--import', nargs='?', default=argparse.SUPPRESS,
+                    help='scans directory tree and '
+                    'synchronizes with status.yaml')
+    ap.add_argument('--verbose', action='store_true')
+    ap.add_argument('--standalone_remote', action='store_true',
+                    help='Skips repositories linked '
+                    '(not standalone) and without remotes. '
+                    'Leaves only unlinked standalone with remotes. '
+                    'Linked reps belong to git submodules or repo. '
+                    'This reps can be replicated with parent git or repo. '
+                    'Reps without remote can\'t be synced via remote.')
+    ap.add_argument('d', nargs='?', default='.')
+    ap.add_argument('rest', nargs='?')
     global args, argv
-    args = parser.parse_args('')
+    args = ap.parse_args('')
     argv = argv[1:]
     while argv:
         log(argv)
-        args = parser.parse_args([argv[0]], args)
+        args = ap.parse_args([argv[0]], args)
         argv = argv[1:]
         log(args)
         if not isdir(args.d):
@@ -220,14 +221,15 @@ class GitM(object):
         self.out = print_csv if 'csv' in args else self.out
 
         if not self.out:  # default output is table
-            self.tab = PrettyTable(fields, border=False, header=False, align="l")
-            self.tab.align = "l"
+            self.tab = PrettyTable(fields,
+                                   border=False, header=False, align="l")
             self.out = table_add_row
 
     def git_for_subdir(self):
         log()
         # print(args.d, argv)
         dir = arg = ''
+        # TODO: check all arguments
         if isfile(argv[-1]):
             dir = dirname(argv[-1])
             arg = basename(argv[-1])
@@ -284,8 +286,10 @@ class GitM(object):
                     self.out(p, st)
                 if not self.loaded:
                     self.out(p, st)
-            except (InvalidGitRepositoryError, GitCommandError, ValueError) as e:
-                warn('Error: ' + str(e) + (': ' + p if p not in str(e) else ''))
+            except (InvalidGitRepositoryError,
+                    GitCommandError, ValueError) as e:
+                warn('Error: ' + str(e) +
+                     (': ' + p if p not in str(e) else ''))
                 traceback.print_exc()
         return status
 
@@ -332,7 +336,8 @@ class GitM(object):
         self.process_args()
         log(self.loaded)
 
-        if isdir(args.d) and (not self.loaded or 'compare' in args or 'export' in args):
+        if (isdir(args.d)
+           and (not self.loaded or 'compare' in args or 'export' in args)):
             # don't scan if self.loaded and not in compare mode
             self.status = self.scan(args.d)
         elif argv and exists(argv[-1]):
