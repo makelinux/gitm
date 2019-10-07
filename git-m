@@ -183,13 +183,18 @@ class GitM(object):
     def process_args(self):
 
         def table_add_row(p, st):
+
+            def ago(s):
+                global ago
+                return short(ago.human(datetime.fromtimestamp(s),
+                             precision=2, past_tense='{}', future_tense='{}'))
+
             r = {}
             r['dir'] = p
             r.update(dict(st))
             r['msg'] = short(r.get('msg'))
             if 'time_sec' in st:
-                r['ago'] = short(ago.human(datetime.fromtimestamp(int(st.time_sec)),
-                                           precision=2, past_tense='{}', future_tense='{}'))
+                r['ago'] = ago(st.time_sec)
             if 'branch' in r:
                 r['branch'] = short(r['branch'])
             self.tab.add_row([r[f] if f in r else '' for f in fields])
