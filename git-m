@@ -296,9 +296,8 @@ class GitM(object):
                     self.out(p, st)
             except (InvalidGitRepositoryError,
                     GitCommandError, ValueError) as e:
-                warn('Error: ' + str(e) +
-                     (': ' + p if p not in str(e) else ''))
-                traceback.print_exc()
+                warn(repr(e) +
+                     (': ' + p if p not in repr(e) else ''))
         return status
 
     def compare(self):
