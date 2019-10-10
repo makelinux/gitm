@@ -229,7 +229,8 @@ class GitM(object):
 
         if not self.out:  # default output is table
             self.tab = PrettyTable(fields,
-                                   border=False, header=False, align="l")
+                                   border=False, header=False)
+            self.tab.align='l'
             self.out = table_add_row
 
     def git_for_subdir(self):
