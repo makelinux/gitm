@@ -11,6 +11,9 @@ Features:
 
  * Replicates standalone repositories which are not included in repo or submodules.
 
+ * Easy to use. For most cases need just to add 'm' to correct git command
+   as the second word. See the next feature for example.
+
  * Perform git command from outer directory
    Example:
 
@@ -38,6 +41,7 @@ This feature saves you from changing current directories between many repositori
 
 
 Getting help:
+
  * git-m --help
 
 TODO:
