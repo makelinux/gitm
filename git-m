@@ -67,7 +67,7 @@ def git_get(g):
         if r.remotes:
             m.remote = r.active_branch.tracking_branch().remote_name
             m.url = r.remotes[m.remote].url
-            m.remote_sha = r.remotes[m.remote].refs.master.commit.hexsha
+            m.remote_sha = r.active_branch.tracking_branch().commit.hexsha
             if m.count:
                 tb = str(r.active_branch.tracking_branch())
                 merge_base = r.merge_base(tb, 'HEAD')[0].hexsha
