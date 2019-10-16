@@ -44,15 +44,15 @@ pushd tmp > /dev/null
 check '../git-m --import | grep -q same'
 check '../git-m --csv | grep -q ".*,.*"'
 check '../git-m --sha | grep -q ".*  .*"'
-check '../git-m --compare | grep -q same'
+check '../git-m --compare --csv | grep -q same'
 check 'grep -q "^.:\$" status.yaml'
 
 git init git-second-tmp > /dev/null
 (cd git-second-tmp; git commit --allow-empty -m empty; git checkout --detach; git branch -d master)
 
 ../git-m --compare
-check '../git-m --compare | grep -q "git-second-tmp.*undesired"'
-check '../git-m --compare | grep -q "standalone-empty-tmp.*absent"'
+check '../git-m --compare --csv | grep -q "git-second-tmp.*undesired"'
+check "../git-m --compare --csv | grep -q 'standalone-empty-tmp.*\(!\|absent\)'"
 
 echo test git_for_subdir:
 check '../git-m describe --always gitm-tmp'

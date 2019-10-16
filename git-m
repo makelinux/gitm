@@ -171,11 +171,14 @@ def parse_args():
 
 
 def print_csv(p, st):
-    print("%s, %s, %d, %s, %s, %s, %s"
-          % (p, st.get('datetime', ''), st.get('count', 0),
-             st.get('sha', ''), '"%s"' % (st.get('msg', '')),
-             st.get('worktree', st.get('linked', 'standalone')),
-             st.get('remote', '') + ' ' + st.get('url', 'local')))
+    print(", ".join(
+        [p, str(st.get('datetime', '')), str(st.get('count', 0)),
+            st.get('sha', ''), '"%s"' % (st.get('msg', '')),
+            st.get('worktree', st.get('linked', 'standalone')),
+            (st.get('remote', 'local') + ' ' + st.get('url', '')),
+            st.get('state', '')
+         ]
+    ))
 
 
 def print_sha(p, st):
