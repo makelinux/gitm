@@ -150,8 +150,8 @@ def parse_args():
                     'synchronizes with status.yaml')
     ap.add_argument('--verbose', action='store_true')
     ap.add_argument('--standalone_remote', action='store_true',
-                    help='Skips repositories linked '
-                    '(not standalone) and without remotes. '
+                    help='Skips linked (not standalone) '
+                    'repositories and without remotes. '
                     'Leaves only unlinked standalone with remotes. '
                     'Linked reps belong to git submodules or repo. '
                     'This reps can be replicated with parent git or repo. '
