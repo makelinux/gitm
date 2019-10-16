@@ -126,9 +126,12 @@ def git_import(d, s):
         s.state += ' same'
 
 
-def short(s):
+def short(s, right=True):
     if s and len(s) > 16:
-        return s[:15] + '…'
+        if right:
+            return s[:15] + '…'
+        else:
+            return '…' + s[-15:]
     return s
 
 
