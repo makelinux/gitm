@@ -84,7 +84,7 @@ See internal help for details.
 Prints or exports status of tree of gits in various formats.
 ~~~~
 
-- text table
+- pretty text table with shortened strings
 - csv
 - sha
 - json

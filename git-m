@@ -13,7 +13,7 @@ import argparse
 import inspect
 import traceback
 from datetime import datetime
-from prettytable import PrettyTable
+from prettytable import *
 from git.exc import InvalidGitRepositoryError, GitCommandError
 from munch import Munch
 import git
@@ -21,7 +21,7 @@ from git.repo.base import Repo
 
 args = None
 
-fields = ("dir ago count revision hash msg branch remote url linked state"
+fields = ("dir age count revision hash msg branch remote url linked state"
           .split())
 
 
@@ -72,9 +72,11 @@ def git_get(g):
                 tb = str(r.active_branch.tracking_branch())
                 merge_base = r.merge_base(tb, 'HEAD')[0].hexsha
                 m.to_push = int(r.git.rev_list('--count', tb + '..HEAD'))
-                if not m.to_push: del m.to_push
+                if not m.to_push:
+                    del m.to_push
                 m.to_pull = int(r.git.rev_list('--count', 'HEAD..' + tb))
-                if not m.to_pull: del m.to_pull
+                if not m.to_pull:
+                    del m.to_pull
     return m
 
 
@@ -195,22 +197,30 @@ class GitM(object):
         self.status = {}
 
     def process_args(self):
+        rep = {'same': '=', 'detached': '/', 'different': '*',
+               'undesired': '-', 'absent': '+', 'imported': '<',
+               'failed': '!'}
+        pattern = re.compile("|".join(rep.keys()))
 
         def table_add_row(p, st):
 
-            def ago(s):
+            def age(s):
                 global ago
                 return short(ago.human(datetime.fromtimestamp(s),
-                             precision=2, past_tense='{}', future_tense='{}'))
+                                       1, '{}', '{}', True))
 
             r = {}
-            r['dir'] = p
+            r['dir'] = short(p, False)
             r.update(dict(st))
-            r['msg'] = short(r.get('msg'))
+            r['msg'] = short(r.get('msg', ''))
             if 'time_sec' in st:
-                r['ago'] = ago(st.time_sec)
-            if 'branch' in r:
-                r['branch'] = short(r['branch'])
+                r['age'] = age(st.time_sec)
+            r['branch'] = short(r.get('branch', ''))
+            r['revision'] = short(r.get('revision', ''), False)
+            r['url'] = short(r.get('url', ''), False)
+            r['linked'] = short(r.get('linked', ''), False)
+            r['state'] = pattern.sub(lambda m: rep[re.escape(m.group(0))],
+                                     r.get('state', ''))
             self.tab.add_row([r[f] if f in r else '' for f in fields])
 
         if 'compare' in args:
@@ -235,8 +245,11 @@ class GitM(object):
 
         if not self.out:  # default output is table
             self.tab = PrettyTable(fields,
-                                   border=False, header=False)
-            self.tab.align='l'
+                                   border=False)
+            self.tab._left_padding_width = 0
+            rights = ('age', 'count')
+            for f in fields:
+                self.tab.align[f] = 'r' if f in rights else 'l'
             self.out = table_add_row
 
     def git_for_subdir(self):
