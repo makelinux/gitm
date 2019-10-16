@@ -65,4 +65,7 @@ check '../git-m describe --always'
 
 popd 2> /dev/null
 
+echo Successes=$successes
+echo Errors=$errors
+
 (exit $errors)
