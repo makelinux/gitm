@@ -62,21 +62,27 @@ def git_get(g):
 
     if cr.has_option('core', 'worktree'):
         m.worktree = cr.get_value('core', 'worktree')
-    if not r.head.is_detached:
-        m.branch = r.active_branch.name
-        if r.remotes:
-            m.remote = r.active_branch.tracking_branch().remote_name
-            m.url = r.remotes[m.remote].url
-            m.remote_sha = r.active_branch.tracking_branch().commit.hexsha
-            if m.count:
-                tb = str(r.active_branch.tracking_branch())
-                merge_base = r.merge_base(tb, 'HEAD')[0].hexsha
-                m.to_push = int(r.git.rev_list('--count', tb + '..HEAD'))
-                if not m.to_push:
-                    del m.to_push
-                m.to_pull = int(r.git.rev_list('--count', 'HEAD..' + tb))
-                if not m.to_pull:
-                    del m.to_pull
+    if r.head.is_detached:
+        return m
+
+    m.branch = r.active_branch.name
+    if not r.remotes:
+        return m
+
+    m.remote = r.active_branch.tracking_branch().remote_name
+    m.url = r.remotes[m.remote].url
+    m.remote_sha = r.active_branch.tracking_branch().commit.hexsha
+    if not m.count:
+        return m
+
+    tb = str(r.active_branch.tracking_branch())
+    merge_base = r.merge_base(tb, 'HEAD')[0].hexsha
+    m.to_push = int(r.git.rev_list('--count', tb + '..HEAD'))
+    if not m.to_push:
+        del m.to_push
+    m.to_pull = int(r.git.rev_list('--count', 'HEAD..' + tb))
+    if not m.to_pull:
+        del m.to_pull
     return m
 
 
