@@ -19,7 +19,7 @@ from munch import Munch
 import git
 from git.repo.base import Repo
 
-args = None
+args = rest_args = None
 
 fields = ("dir age count revision hash msg branch remote url linked state"
           .split())
@@ -168,17 +168,8 @@ def parse_args():
                     'This reps can be replicated with parent git or repo. '
                     'Reps without remote can\'t be synced via remote.')
     ap.add_argument('d', nargs='?', default='.')
-    ap.add_argument('rest', nargs='?')
-    global args, argv
-    args = ap.parse_args('')
-    argv = argv[1:]
-    while argv:
-        log(argv)
-        args = ap.parse_args([argv[0]], args)
-        argv = argv[1:]
-        log(args)
-        if not isdir(args.d):
-            break
+    global args, rest_args
+    args, rest_args = ap.parse_known_args()
 
 
 def print_csv(p, st):
@@ -260,20 +251,20 @@ class GitM(object):
 
     def git_for_subdir(self):
         log()
-        # print(args.d, argv)
+        # print(args.d, rest_args)
         dir = arg = ''
         # TODO: check all arguments
-        if isfile(argv[-1]):
-            dir = dirname(argv[-1])
-            arg = basename(argv[-1])
-        elif isdir(argv[-1]):
-            dir = argv[-1]
+        if isfile(rest_args[-1]):
+            dir = dirname(rest_args[-1])
+            arg = basename(rest_args[-1])
+        elif isdir(rest_args[-1]):
+            dir = rest_args[-1]
         else:
             raise("Neither file or dir: " + dir)
         log(dir)
         log(arg)
         cmd = ' '.join(["git -C", dir, args.d] +
-                       argv[:-1] + [arg])
+                       rest_args[:-1] + [arg])
         log(cmd)
         ret = os.system(cmd)
         return os.WEXITSTATUS(ret)
@@ -283,7 +274,7 @@ class GitM(object):
         ret = 0
         for d, s in self.loaded.items() if self.loaded else {}:
             print("project", d)
-            r = os.system(' '.join(["git -C", d, args.d] + argv))
+            r = os.system(' '.join(["git -C", d, args.d] + rest_args))
             if os.WTERMSIG(r) == signal.SIGINT:
                 raise KeyboardInterrupt
             log(r)
@@ -372,8 +363,10 @@ class GitM(object):
            and (not self.loaded or 'compare' in args or 'export' in args)):
             # don't scan if self.loaded and not in compare mode
             self.status = self.scan(args.d)
-        elif argv and exists(argv[-1]):
+        # assume git command with an argument
+        elif rest_args and exists(rest_args[-1]):
             return self.git_for_subdir()
+        # assume git command without an argument
         elif not isdir(args.d):
             return self.git_for_each()
 
