@@ -21,7 +21,7 @@ from git.repo.base import Repo
 
 args = rest_args = None
 
-fields = ("dir age count revision hash msg branch remote url linked state"
+fields = ("dir age count revision hash msg branch remote remote_head url linked state"
           .split())
 
 
@@ -68,21 +68,22 @@ def git_get(g):
     m.branch = r.active_branch.name
     if not r.remotes:
         return m
+    tb = r.active_branch.tracking_branch()
+    if tb:
+        m.remote = tb.remote_name
+        m.remote_head = tb.remote_head
+        m.url = r.remotes[m.remote].url
+        m.remote_sha = tb.commit.hexsha
+        if not m.count:
+            return m
 
-    m.remote = r.active_branch.tracking_branch().remote_name
-    m.url = r.remotes[m.remote].url
-    m.remote_sha = r.active_branch.tracking_branch().commit.hexsha
-    if not m.count:
-        return m
-
-    tb = str(r.active_branch.tracking_branch())
-    merge_base = r.merge_base(tb, 'HEAD')[0].hexsha
-    m.to_push = int(r.git.rev_list('--count', tb + '..HEAD'))
-    if not m.to_push:
-        del m.to_push
-    m.to_pull = int(r.git.rev_list('--count', 'HEAD..' + tb))
-    if not m.to_pull:
-        del m.to_pull
+        merge_base = r.merge_base(tb, 'HEAD')[0].hexsha
+        m.to_push = int(r.git.rev_list('--count', str(tb) + '..HEAD'))
+        if not m.to_push:
+            del m.to_push
+        m.to_pull = int(r.git.rev_list('--count', 'HEAD..' + str(tb)))
+        if not m.to_pull:
+            del m.to_pull
     return m
 
 
