@@ -12,12 +12,14 @@ from sys import *
 import argparse
 import inspect
 import traceback
-from datetime import datetime
+from datetime import *
 from prettytable import *
 from git.exc import InvalidGitRepositoryError, GitCommandError
 from munch import Munch
 import git
 from git.repo.base import Repo
+import pandas as pd
+from pprint import *
 
 args = rest_args = None
 
@@ -168,6 +170,7 @@ def parse_args():
                     'Linked reps belong to git submodules or repo. '
                     'This reps can be replicated with parent git or repo. '
                     'Reps without remote can\'t be synced via remote.')
+    ap.add_argument('--since', nargs=1)
     ap.add_argument('d', nargs='?', default='.')
     global args, rest_args
     args, rest_args = ap.parse_known_args()
@@ -321,6 +324,8 @@ class GitM(object):
         for d, s in self.loaded.items() if self.loaded else {}:
             try:
                 s = Munch(s)
+                if args.since and s.get('datetime', datetime.now()) < pd.to_datetime(args.since):
+                    continue
                 if not git_compare(d, s) and 'import' in args:
                     git_import(d, s)
                 self.out(d, s)
