@@ -2,7 +2,7 @@ git-m - multiple git replication and management utility
 =====
 
 There are great tools for multiple gits (git repositories) management: repo and git submodules.
-But sometimes you can have dozens and hundreds of standalone gits which you would like to manage without
+But sometimes you can have dozens or hundreds of standalone gits which you would like to manage without
 manual initialization of repo or git submodules.
 
 The mission of git-m is to simplify work with multiple gits.
@@ -11,22 +11,21 @@ The mission of git-m is to simplify work with multiple gits.
    :local:
 
 Features
+****
+
+Can be installed as custom git command 'm'
 ----
 
-Can be installed as custom git command
-~~~~
+To use git-m as custom git command copy it to PATH, for example to /usr/local/bin.
 
 .. code-block::
 
     git m -h
 
-To use git-m as custom git command copy it to PATH, for example to
-/usr/local/bin.
+Discovers and replicates tree of standalone gits
+----
 
-Replicates tree of standalone repositories
-~~~~
-
-Standalone repository is r. which is not included in repo or submodules.
+Standalone git [repository] is r. which is not included in repo or submodules.
 
 .. code-block::
 
@@ -38,11 +37,11 @@ Then copy status.yaml to another host or location and run
 
     git m --import
 
-Easy to use
-~~~~
+Expands and works around limitations of original git commands
+----
 
-For most cases need just to add 'm' to correct git command as the second
-word. See the next features for example.
+To use git-m with original git command just use arguments of git as arguments of git-m.
+If git-m is installed as custom command just add "m" between "git" and original command.
 
 Performs a git command from an outer directory
 ~~~~
@@ -51,18 +50,21 @@ Git refuses to work from outer directory:
 
 .. code-block::
 
-    $ git branch some_project
+    $ git log some_project/some_file
     fatal: not a git repository (or any parent up to mount point /)
 
-Git-m changes directory to destination and performs requested command:
+You can use option -C
+
+.. code-block::
+    $ git -C some_project log some_file
+
+More easy just to use git-m. It changes directory to destination directory and performs requested command:
 
 .. code-block::
 
-    $ git m branch some_project
-     * master
+    $ git m log some_project/some_file
 
-This feature saves you from changing current directories between
-many repositories.
+This feature saves you from splitting patches and changing current directories between many repositories.
 
 Performs a git command on all repositories in directory tree
 ~~~~
@@ -78,12 +80,12 @@ Performs a git command on all repositories in directory tree
     heads/master
 
 Compares status of current tree of gits against saved
-~~~~
+----
 
-See internal help for details.
+Please see internal help for details.
 
-Prints or exports status of tree of gits in various formats.
-~~~~
+Discovers status of tree of gits in various handy formats.
+----
 
 - pretty text table with shortened strings
 - csv
@@ -94,13 +96,13 @@ Prints or exports status of tree of gits in various formats.
 See internal help for details.
 
 More features
-~~~~
+----
 
 .. code-block::
 
   git-m --help
 
 To do
-----
+****
 
 * Accept list of files as input. For example pipe from: find . -name '.git' -printf "%h\n"
