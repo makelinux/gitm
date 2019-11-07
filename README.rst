@@ -1,10 +1,11 @@
 git-m - multiple git replication and management utility
 =====
 
-There are great tools for multiple git repositories management: repo and
-git submodules. But sometimes you can have dozens and hundreds of
-standalone git repositories which you would like to manage.
+There are great tools for multiple gits (git repositories) management: repo and git submodules.
+But sometimes you can have dozens and hundreds of standalone gits which you would like to manage without
+manual initialization of repo or git submodules.
 
+The mission of git-m is to simplify work with multiple gits.
 
 .. contents::
    :local:
