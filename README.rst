@@ -106,3 +106,4 @@ To do
 ****
 
 * Accept list of files as input. For example pipe from: find . -name '.git' -printf "%h\n"
+* **You are welcome to request new features**
