@@ -138,12 +138,12 @@ def git_import(d, s):
 
 
 def short(s, right=True):
-    if s and len(s) > 16:
-        if right:
-            return s[:15] + '…'
-        else:
-            return '…' + s[-15:]
-    return s
+    if not s or len(s) <= 16:
+        return s
+    if right:
+        return s[:15] + '…'
+    else:
+        return '…' + s[-15:]
 
 
 def parse_args():
