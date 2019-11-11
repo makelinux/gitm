@@ -150,7 +150,7 @@ def parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument('--table', nargs='?', default=argparse.SUPPRESS)
     ap.add_argument('--sha', nargs='?', default=argparse.SUPPRESS,
-                    help='print sha hashes in format of sha1sum utility'
+                    help='print sha hashes in format of sha1sum utility '
                     'optionally to a file')
     ap.add_argument('--csv', nargs='?', default=argparse.SUPPRESS,
                     help='print in format csv')
@@ -166,7 +166,6 @@ def parse_args():
                     'synchronizes with default status.yaml '
                     'or specified another file. '
                     'Can be "-" for standart input.')
-    ap.add_argument('--verbose', action='store_true')
     ap.add_argument('--standalone_remote', action='store_true',
                     help='Skips linked (not standalone) '
                     'repositories and without remotes. '
@@ -176,6 +175,7 @@ def parse_args():
                     'Reps without remote can\'t be synced via remote.')
     ap.add_argument('--since', nargs=1)
     ap.add_argument('d', nargs='?', default='.')
+    ap.add_argument('--verbose', action='store_true')
     global args, rest_args
     args, rest_args = ap.parse_known_args()
 
