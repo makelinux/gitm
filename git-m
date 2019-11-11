@@ -345,6 +345,7 @@ class GitM(object):
             else:
                 f = open(args.json, "w")
             f.write(json.dumps(self.status, indent=4, default=str) + "\n")
+            f.close()
 
         log(args)
         if 'export' in args:
@@ -356,6 +357,7 @@ class GitM(object):
                 f = open(args.export, "w")
             f.write(yaml.dump(self.status,
                               default_flow_style=False, default_style=''))
+            f.close()
             warn('Exported status into file ' + args.export)
             return
 
