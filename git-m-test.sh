@@ -21,7 +21,7 @@ check()
 	fi
 }
 
-rm -rf tmp gitm-tmp* standalone-empty-tmp status.yaml > /dev/null
+rm -rf tmp* gitm-tmp* standalone-empty-tmp status.yaml > /dev/null
 
 # Sanity check
 check ./git-m || exit
@@ -63,6 +63,12 @@ check '../git-m log -n1 gitm-tmp/git-m | grep ^commit'
 echo test git_for_each:
 ../git-m --export
 check '../git-m describe --always'
+
+echo check one-liner replication over ssh
+
+../git-m --export - | ssh -o BatchMode=yes -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no localhost "mkdir -p $PWD/../tmp.ssh; cd \"\$_\";pwd;  ../git-m --import -"
+
+check diff --exclude={.git,git-second-tmp,status.yaml} -r . ../tmp.ssh
 
 popd 2> /dev/null
 

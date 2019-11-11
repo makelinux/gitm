@@ -37,6 +37,12 @@ Then copy status.yaml to another host or location and run
 
     git m --import
 
+One-liner to replicate gits to another host:
+
+.. code-block::
+
+    git m --export - | ssh $HOST "mkdir -p $DIR; cd $DIR; git m --import -; ls"
+
 Expands and works around limitations of original git commands
 ----
 

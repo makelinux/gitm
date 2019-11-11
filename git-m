@@ -156,12 +156,16 @@ def parse_args():
                     help='print in format csv')
     ap.add_argument('--json', nargs='?', default=argparse.SUPPRESS)
     ap.add_argument('--export', nargs='?', default=argparse.SUPPRESS,
-                    help='scans directory tree and saves results status.yaml')
+                    help='scans directory tree and saves results '
+                    'to default status.yaml or specified another file. '
+                    'Can be "-" for standart output.')
     ap.add_argument('--compare', nargs='?', default=argparse.SUPPRESS,
                     help='scans directory tree and compares with status.yaml')
     ap.add_argument('--import', nargs='?', default=argparse.SUPPRESS,
                     help='scans directory tree and '
-                    'synchronizes with status.yaml')
+                    'synchronizes with default status.yaml '
+                    'or specified another file. '
+                    'Can be "-" for standart input.')
     ap.add_argument('--verbose', action='store_true')
     ap.add_argument('--standalone_remote', action='store_true',
                     help='Skips linked (not standalone) '
@@ -236,9 +240,15 @@ class GitM(object):
                 if args.compare.endswith('.json'):
                     self.loaded = Munch(json.load(f))
         else:
-            if 'export' not in args and isfile('status.yaml'):
-                with open('status.yaml') as f:
-                    self.loaded = Munch(yaml.load(f))
+            fn = vars(args).get('import', None)
+            fn = fn if fn else 'status.yaml'
+            if 'export' not in args and (isfile(fn) or fn == '-'):
+                if fn == '-':
+                    f = sys.stdin
+                else:
+                    f = open(fn)
+                self.loaded = Munch(yaml.load(f))
+                f.close()
 
         self.out = print_sha if 'sha' in args else self.out
 
