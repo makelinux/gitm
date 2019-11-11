@@ -337,8 +337,6 @@ class GitM(object):
                 traceback.print_exc()
 
     def output(self):
-        print(self.tab) if self.tab else 0
-
         if 'json' in args:
             if not args.json:
                 args.json = "status.json"
@@ -359,6 +357,10 @@ class GitM(object):
             f.write(yaml.dump(self.status,
                               default_flow_style=False, default_style=''))
             warn('Exported status into file ' + args.export)
+            return
+
+        print(self.tab) if self.tab else 0
+
 
     def main(self):
         parse_args()
