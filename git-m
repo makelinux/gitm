@@ -174,7 +174,16 @@ def parse_args():
                     'This reps can be replicated with parent git or repo. '
                     'Reps without remote can\'t be synced via remote.')
     ap.add_argument('--since', nargs=1)
-    ap.add_argument('d', nargs='?', default='.')
+    ap.add_argument('rest', metavar='...', nargs='?', default='.',
+                    help='directory for export or compare, '
+                    'or git command with arguments. '
+                    'When argument is existed file or directory the git '
+                    'command will be executed for that location, '
+                    'even current directory is outer to git repository. '
+                    'When arguments of the specified git command '
+                    'are not existed files/dirs the command '
+                    'will be executed for all exported git directories.'
+                    )
     ap.add_argument('--verbose', action='store_true')
     global args, rest_args
     args, rest_args = ap.parse_known_args()
@@ -265,7 +274,7 @@ class GitM(object):
 
     def git_for_subdir(self):
         log()
-        # print(args.d, rest_args)
+        # print(args.rest, rest_args)
         dir = arg = ''
         # TODO: check all arguments
         if isfile(rest_args[-1]):
@@ -277,7 +286,7 @@ class GitM(object):
             raise("Neither file or dir: " + dir)
         log(dir)
         log(arg)
-        cmd = ' '.join(["git -C", dir, args.d] +
+        cmd = ' '.join(["git -C", dir, args.rest] +
                        rest_args[:-1] + [arg])
         log(cmd)
         ret = os.system(cmd)
@@ -288,7 +297,7 @@ class GitM(object):
         ret = 0
         for d, s in self.loaded.items() if self.loaded else {}:
             print("project", d)
-            r = os.system(' '.join(["git -C", d, args.d] + rest_args))
+            r = os.system(' '.join(["git -C", d, args.rest] + rest_args))
             if os.WTERMSIG(r) == signal.SIGINT:
                 raise KeyboardInterrupt
             log(r)
@@ -379,15 +388,15 @@ class GitM(object):
         self.process_args()
         log(self.loaded)
 
-        if (isdir(args.d)
+        if (isdir(args.rest)
            and (not self.loaded or 'compare' in args or 'export' in args)):
             # don't scan if self.loaded and not in compare mode
-            self.status = self.scan(args.d)
+            self.status = self.scan(args.rest)
         # assume git command with an argument
         elif rest_args and exists(rest_args[-1]):
             return self.git_for_subdir()
         # assume git command without an argument
-        elif not isdir(args.d):
+        elif not isdir(args.rest):
             return self.git_for_each()
 
         # do comprare without scan even when 'compare' not in args.
