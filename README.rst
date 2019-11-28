@@ -88,7 +88,7 @@ Performs a git command on all repositories in directory tree
 Compares status of current tree of gits against saved
 ----
 
-Please see internal help for details.
+Please see the built-in help for details.
 
 Discovers status of tree of gits in various handy formats.
 ----
@@ -96,10 +96,10 @@ Discovers status of tree of gits in various handy formats.
 - pretty text table with shortened strings
 - csv
 - sha
-- json
-- yaml
+- JSON
+- YAML
 
-See internal help for details.
+Please see the built-in help for details.
 
 More features
 ----
