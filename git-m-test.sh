@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 successes=0
 errors=0
@@ -51,6 +51,13 @@ compare-test()
 	check "../git-m --compare --csv | grep -q 'standalone-empty-tmp.*\\(!\\|absent\\)'"
 }
 
+git_for_subdir-test()
+{
+	check '../git-m describe --always gitm-tmp'
+	check '../git-m describe --always gitm-tmp/'
+	check '../git-m log -n1 gitm-tmp/git-m | grep ^commit'
+}
+
 rm -rf tmp* gitm-tmp* standalone-empty-tmp status.yaml > /dev/null
 
 # Sanity check
@@ -70,10 +77,7 @@ import-test
 
 compare-test
 
-echo test git_for_subdir:
-check '../git-m describe --always gitm-tmp'
-check '../git-m describe --always gitm-tmp/'
-check '../git-m log -n1 gitm-tmp/git-m | grep ^commit'
+git_for_subdir-test
 
 echo test git_for_each:
 ../git-m --export
