@@ -58,6 +58,12 @@ git_for_subdir-test()
 	check '../git-m log -n1 gitm-tmp/git-m | grep ^commit'
 }
 
+git_for_each-test()
+{
+	../git-m --export
+	check '../git-m describe --always'
+}
+
 rm -rf tmp* gitm-tmp* standalone-empty-tmp status.yaml > /dev/null
 
 # Sanity check
@@ -79,9 +85,7 @@ compare-test
 
 git_for_subdir-test
 
-echo test git_for_each:
-../git-m --export
-check '../git-m describe --always'
+git_for_each-test
 
 echo check one-liner replication over ssh
 
