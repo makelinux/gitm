@@ -32,6 +32,15 @@ export-test()
 	check 'test -s status.yaml'
 }
 
+import-test()
+{
+	check '../git-m --import | grep -q ='
+	check '../git-m --csv | grep -q ".*,.*"'
+	check '../git-m --sha | grep -q ".*  .*"'
+	check '../git-m --compare --csv | grep -q same'
+	check 'grep -q "^.:\$" status.yaml'
+}
+
 rm -rf tmp* gitm-tmp* standalone-empty-tmp status.yaml > /dev/null
 
 # Sanity check
@@ -47,11 +56,7 @@ mkdir tmp
 cp status.yaml tmp
 pushd tmp > /dev/null
 
-check '../git-m --import | grep -q ='
-check '../git-m --csv | grep -q ".*,.*"'
-check '../git-m --sha | grep -q ".*  .*"'
-check '../git-m --compare --csv | grep -q same'
-check 'grep -q "^.:\$" status.yaml'
+import-test
 
 git init git-second-tmp > /dev/null
 (cd git-second-tmp; git commit --allow-empty -m empty; git checkout --detach; git branch -d master)
