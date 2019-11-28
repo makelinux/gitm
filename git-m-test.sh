@@ -64,6 +64,17 @@ git_for_each-test()
 	check '../git-m describe --always'
 }
 
+export-ssh-import-test()
+{
+	echo check one-liner replication over ssh
+
+	export GIT_SSH_COMMAND="ssh -o BatchMode=yes -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=ERROR"
+	../git-m --export - | $GIT_SSH_COMMAND localhost \
+		"mkdir -p $PWD/../tmp.ssh; cd \"\$_\";pwd;  ../git-m --import -"
+
+	check diff --exclude={.git,git-second-tmp,status.yaml} -r . ../tmp.ssh
+}
+
 rm -rf tmp* gitm-tmp* standalone-empty-tmp status.yaml > /dev/null
 
 # Sanity check
@@ -87,11 +98,7 @@ git_for_subdir-test
 
 git_for_each-test
 
-echo check one-liner replication over ssh
-
-../git-m --export - | ssh -o BatchMode=yes -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no localhost "mkdir -p $PWD/../tmp.ssh; cd \"\$_\";pwd;  ../git-m --import -"
-
-check diff --exclude={.git,git-second-tmp,status.yaml} -r . ../tmp.ssh
+export-ssh-import-test
 
 popd 2> /dev/null
 
