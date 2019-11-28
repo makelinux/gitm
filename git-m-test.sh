@@ -41,6 +41,16 @@ import-test()
 	check 'grep -q "^.:\$" status.yaml'
 }
 
+compare-test()
+{
+	git init git-second-tmp > /dev/null
+	(cd git-second-tmp; git commit --allow-empty -m empty; git checkout --detach; git branch -d master)
+
+	../git-m --compare
+	check '../git-m --compare --csv | grep -q "git-second-tmp.*undesired"'
+	check "../git-m --compare --csv | grep -q 'standalone-empty-tmp.*\\(!\\|absent\\)'"
+}
+
 rm -rf tmp* gitm-tmp* standalone-empty-tmp status.yaml > /dev/null
 
 # Sanity check
@@ -58,12 +68,7 @@ pushd tmp > /dev/null
 
 import-test
 
-git init git-second-tmp > /dev/null
-(cd git-second-tmp; git commit --allow-empty -m empty; git checkout --detach; git branch -d master)
-
-../git-m --compare
-check '../git-m --compare --csv | grep -q "git-second-tmp.*undesired"'
-check "../git-m --compare --csv | grep -q 'standalone-empty-tmp.*\(!\|absent\)'"
+compare-test
 
 echo test git_for_subdir:
 check '../git-m describe --always gitm-tmp'
