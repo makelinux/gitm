@@ -1,4 +1,4 @@
-git-m - multiple git replication and management utility
+git-m - multiple git replication and management tool
 =====
 
 There are great tools for multiple gits (git repositories) management: repo and git submodules.
