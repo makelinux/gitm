@@ -41,6 +41,12 @@ def log(*_args, **kwargs):
               str(*_args).rstrip(), file=sys.stderr, **kwargs)
 
 
+def try_get(a):
+    try:
+        return a()
+    except:
+        return None
+
 def git_get(g):
     m = Munch()
     r = Repo(g)
@@ -64,28 +70,36 @@ def git_get(g):
 
     if cr.has_option('core', 'worktree'):
         m.worktree = cr.get_value('core', 'worktree')
-    if r.head.is_detached:
-        return m
+    # if r.head.is_detached:
+    #    return m
 
-    m.branch = r.active_branch.name
+    m.branch = try_get(lambda: r.active_branch.name)
     if not r.remotes:
         return m
-    tb = r.active_branch.tracking_branch()
+    log(m)
+    # if not m.count:
+    #    return m
+
+    tb = try_get(lambda: r.active_branch.tracking_branch())
     if tb:
         m.remote = tb.remote_name
-        m.remote_head = tb.remote_head
-        m.url = r.remotes[m.remote].url
-        m.remote_sha = tb.commit.hexsha
-        if not m.count:
-            return m
-
-        merge_base = r.merge_base(tb, 'HEAD')[0].hexsha
-        m.to_push = int(r.git.rev_list('--count', str(tb) + '..HEAD'))
-        if not m.to_push:
-            del m.to_push
-        m.to_pull = int(r.git.rev_list('--count', 'HEAD..' + str(tb)))
-        if not m.to_pull:
-            del m.to_pull
+    else:
+        m.remote = r.remotes[0].name
+    log(r.remotes[m.remote])
+    m.url = try_get(lambda: r.remotes[m.remote].url)
+    if not tb:
+        return m
+    m.remote = tb.remote_name
+    log(m.remote)
+    m.remote_head = tb.remote_head
+    m.remote_sha = tb.commit.hexsha
+    merge_base = r.merge_base(tb, 'HEAD')[0].hexsha
+    m.to_push = int(r.git.rev_list('--count', str(tb) + '..HEAD'))
+    if not m.to_push:
+        del m.to_push
+    m.to_pull = int(r.git.rev_list('--count', 'HEAD..' + str(tb)))
+    if not m.to_pull:
+        del m.to_pull
     return m
 
 
