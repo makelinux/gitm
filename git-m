@@ -202,7 +202,7 @@ def parse_args():
                     'or specified another file. '
                     'Can be "-" for standart input.')
     ap.add_argument('--standalone_remote', action='store_true',
-                    help='Skips linked (not standalone) '
+                    help='skips linked (not standalone) '
                     'repositories and without remotes. '
                     'Leaves only unlinked standalone with remotes. '
                     'Linked reps belong to git submodules or repo. '
@@ -227,6 +227,8 @@ def parse_args():
     ap.add_argument('--verbose', action='store_true')
     global args, rest_args
     args, rest_args = ap.parse_known_args()
+    log(args)
+    log(rest_args)
 
 
 def print_csv(p, st):
@@ -319,6 +321,7 @@ class GitM(object):
             for f in fields:
                 self.tab.align[f] = 'r' if f in rights else 'l'
             self.out = table_add_row
+        # end of process_args
 
     def git_for_subdir(self):
         log()
@@ -360,7 +363,7 @@ class GitM(object):
         for path, dirs, files in os.walk(d):
             (dir, base) = split(path)
             p = re.sub(r'^\.\/', '', path)
-            #log(p)
+            # log(p)
             if base in ['.git', 'tmp']:
                 dirs[:] = []  # prune
                 continue
@@ -446,7 +449,6 @@ class GitM(object):
             return
 
         print(self.tab) if self.tab else 0
-
 
     def main(self):
         parse_args()
