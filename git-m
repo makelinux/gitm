@@ -219,6 +219,11 @@ def print_csv(p, st):
     ))
 
 
+def age(s):
+    return short(ago.human(datetime.fromtimestamp(s),
+                           1, '{}', '{}', True))
+
+
 def print_sha(p, st):
     print("%s  %s" % (st.sha, p)) if 'sha' in st else 0
 
@@ -236,12 +241,6 @@ class GitM(object):
         pattern = re.compile("|".join(rep.keys()))
 
         def table_add_row(p, st):
-
-            def age(s):
-                global ago
-                return short(ago.human(datetime.fromtimestamp(s),
-                                       1, '{}', '{}', True))
-
             r = {}
             r['dir'] = short(p, False)
             r.update(dict(st))
