@@ -151,9 +151,13 @@ def git_import(d, s):
         s.state += ' same'
 
 
+def xstr(s):
+    return '' if s is None else str(s)
+
+
 def short(s, right=True):
     if not s or len(s) <= 16:
-        return s
+        return xstr(s)
     if right:
         return s[:15] + '…'
     else:
@@ -205,10 +209,11 @@ def parse_args():
 
 def print_csv(p, st):
     print(", ".join(
-        [p, str(st.get('datetime', '')), str(st.get('count', 0)),
+        [p, xstr(st.get('datetime', '')), xstr(st.get('count', 0)),
             st.get('sha', ''), '"%s"' % (st.get('msg', '')),
+            xstr(st.get('branch', '')),
             st.get('worktree', st.get('linked', 'standalone')),
-            (st.get('remote', 'local') + ' ' + st.get('url', '')),
+            (st.get('remote', 'local') + ' ' + xstr(st.get('url', ''))),
             st.get('state', '')
          ]
     ))
