@@ -20,6 +20,8 @@ import git
 from git.repo.base import Repo
 import pandas as pd
 from pprint import *
+from colorama.ansi import *
+
 
 args = rest_args = None
 
@@ -39,6 +41,10 @@ def log(*_args, **kwargs):
               (s1.filename, s1.lineno, s1.function,
                inspect.stack()[2].function),
               str(*_args).rstrip(), file=sys.stderr, **kwargs)
+
+
+def run_line(m=None):
+    print(clear_line() + m, end='\r', file=sys.stderr)
 
 
 def try_get(a):
@@ -325,17 +331,19 @@ class GitM(object):
 
     def scan(self, d):
         warn('Scanning directory tree ...')
+        log(d)
         status = {}
         for path, dirs, files in os.walk(d):
             (dir, base) = split(path)
             p = re.sub(r'^\.\/', '', path)
-            log(p)
+            #log(p)
             if base in ['.git', 'tmp']:
                 dirs[:] = []  # prune
                 continue
             if not ('.git' in files or '.git' in dirs):
                 continue
 
+            run_line(p)
             try:
                 st = git_get(p)
                 # Get only remote and standalone if requested
@@ -355,6 +363,7 @@ class GitM(object):
                     GitCommandError, ValueError) as e:
                 warn(repr(e) +
                      (': ' + p if p not in repr(e) else ''))
+        run_line('')
         return status
 
     def compare(self):
