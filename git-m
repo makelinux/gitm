@@ -47,11 +47,22 @@ def run_line(m=None):
     print(clear_line() + m, end='\r', file=sys.stderr)
 
 
-def try_get(a):
+def git_status_get(r, m):
+    m.untracked = len(r.untracked_files)
+    m.changed = len([f.a_path for f in r.index.diff(None)])
+    m.stashes = len(r.git.stash('list').splitlines())
+    log(r.remotes)
+    if r.remotes:
+        m.to_push = int(try_get(
+            lambda: r.git.rev_list('--count', '@{upstream}..HEAD'), 0))
+
+
+def try_get(a, none=None):
     try:
         return a()
-    except:
-        return None
+    except BaseException:
+        return none
+
 
 def git_get(g):
     m = Munch()
@@ -197,6 +208,11 @@ def parse_args():
                     'Linked reps belong to git submodules or repo. '
                     'This reps can be replicated with parent git or repo. '
                     'Reps without remote can\'t be synced via remote.')
+    ap.add_argument('--status', action='store_true',
+                    help='prints number of untracked and changed files, '
+                    'number of stashes '
+                    'and number of local "ahead" commits to push '
+                    'when any of above values is unzero')
     ap.add_argument('--since', nargs=1)
     ap.add_argument('rest', metavar='...', nargs='?', default='.',
                     help='directory for export or compare, '
@@ -232,6 +248,12 @@ def age(s):
 
 def print_sha(p, st):
     print("%s  %s" % (st.sha, p)) if 'sha' in st else 0
+
+
+def print_status(p, st):
+    if (st.untracked + st.changed + st.stashes + st.get('to_push', 0)):
+        print("\r%-50s\t%3d\t%3d\t%3d\t%3d" % (p, st.untracked, st.changed,
+                                               st.stashes, st.to_push))
 
 
 class GitM(object):
@@ -286,6 +308,8 @@ class GitM(object):
         self.out = print_sha if 'sha' in args else self.out
 
         self.out = print_csv if 'csv' in args else self.out
+
+        self.out = print_status if args.status else self.out
 
         if not self.out:  # default output is table
             self.tab = PrettyTable(fields,
@@ -366,21 +390,35 @@ class GitM(object):
         run_line('')
         return status
 
-    def compare(self):
+    def compare(self, d, s):
+        if args.since and s.get(
+                'datetime',
+                datetime.now()) < pd.to_datetime(
+                args.since):
+            return
+        if not git_compare(d, s) and 'import' in args:
+            git_import(d, s)
+        self.out(d, s)
+        self.status[d] = dict(s)
+
+    def status_out(self, d, s):
+        r = Repo(d)
+        git_status_get(r, s)
+        print_status(d, s)
+        self.status[d] = dict(s)
+
+    def for_each_loaded(self, func):
         for d, s in self.loaded.items() if self.loaded else {}:
             try:
-                s = Munch(s)
-                if args.since and s.get('datetime', datetime.now()) < pd.to_datetime(args.since):
-                    continue
-                if not git_compare(d, s) and 'import' in args:
-                    git_import(d, s)
-                self.out(d, s)
-                self.status[d] = dict(s)
+                run_line(d)
+                func(d, Munch(s))
+
             except (InvalidGitRepositoryError, GitCommandError,
                     ValueError) as e:
                 warn('Error: ' + str(e) +
                      (': ' + d if d not in str(e) else ''))
                 traceback.print_exc()
+        run_line('')
 
     def output(self):
         if 'json' in args:
@@ -425,10 +463,12 @@ class GitM(object):
         # assume git command without an argument
         elif not isdir(args.rest):
             return self.git_for_each()
-
-        # do comprare without scan even when 'compare' not in args.
-        self.compare()
-        self.output()
+        if args.status:
+            self.for_each_loaded(self.status_out)
+        else:
+            # do comprare without scan even when 'compare' not in args.
+            self.for_each_loaded(self.compare)
+            self.output()
 
 
 if __name__ == "__main__":
