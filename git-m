@@ -360,7 +360,7 @@ class GitM(object):
         warn('Scanning directory tree ...')
         log(d)
         status = {}
-        for path, dirs, files in os.walk(d):
+        for path, dirs, files in os.walk(d, followlinks=True):
             (dir, base) = split(path)
             p = re.sub(r'^\.\/', '', path)
             # log(p)
