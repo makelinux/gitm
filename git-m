@@ -213,7 +213,9 @@ def parse_args():
                     'number of stashes '
                     'and number of local "ahead" commits to push '
                     'when any of above values is unzero')
-    ap.add_argument('--since', nargs=1)
+    ap.add_argument('--since', nargs=1,
+                    help='filter aged repositories. '
+                    'for example: git-m --since 2019-12-31')
     ap.add_argument('rest', metavar='...', nargs='?', default='.',
                     help='directory for export or compare, '
                     'or git command with arguments. '
