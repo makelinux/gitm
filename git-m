@@ -356,11 +356,22 @@ class GitM(object):
         log()
         ret = 0
         for d, s in self.loaded.items() if self.loaded else {}:
-            print("project", d)
-            r = os.system(' '.join(["git -C", d, args.rest] + rest_args))
+            # print("project", d, flush=True)
+            # --src-prefix=
+
+            additional_args = (['--src-prefix=' + 'a/'+ d + '//',
+                '--dst-prefix=' + 'b/' + d + '//' ]
+                    if args.rest in ['diff', 'log']
+                    else [])
+            if args and 'verbose' in args and args.verbose:
+                print(d + ': ', flush=True)
+            log(additional_args)
+            r = os.system(' '.join(["git --no-pager -C", d, args.rest] +
+                additional_args +
+                rest_args))
             if os.WTERMSIG(r) == signal.SIGINT:
                 raise KeyboardInterrupt
-            log(r)
+            #log(r)
             if r:
                 ret = r
         return os.WEXITSTATUS(ret)
