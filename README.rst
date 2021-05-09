@@ -108,6 +108,12 @@ More features
 
   git-m --help
 
+Install
+****
+sudo pip3 install ago prettytable repository munch pandas
+
+sudo apt-get -f install python3-git
+
 To do
 ****
 
