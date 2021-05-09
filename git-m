@@ -253,8 +253,14 @@ def age(s):
 def print_sha(p, st):
     print("%s  %s" % (st.sha, p)) if 'sha' in st else 0
 
+print_status_num = 0
 
 def print_status(p, st):
+    global print_status_num
+    if not print_status_num:
+        print("\r%-50s\t%8s\t%8s\t%8s\t%8s" % ('-', 'untracked', 'changed',
+                                               'stashes', 'to_push'))
+    print_status_num +=1
     if (st.untracked + st.changed + st.stashes + st.get('to_push', 0)):
         print("\r%-50s\t%8d\t%8d\t%8d\t%8d" % (p, st.untracked, st.changed,
                                                st.stashes, st.get('to_push', 0)))
@@ -468,6 +474,8 @@ class GitM(object):
             return self.git_for_each()
         if args.status:
             self.for_each_loaded(self.status_out)
+        if args.status:
+            print("Total:", print_status_num)
         else:
             # do comprare without scan even when 'compare' not in args.
             self.for_each_loaded(self.compare)
