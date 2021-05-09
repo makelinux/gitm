@@ -219,7 +219,7 @@ def parse_args():
     ap.add_argument('rest', metavar='...', nargs='?', default='.',
                     help='directory for export or compare, '
                     'or git command with arguments. '
-                    'When argument is existed file or directory the git '
+                    'When argument is existing file or directory the git '
                     'command will be executed for that location, '
                     'even current directory is outer to git repository. '
                     'When arguments of the specified git command '
@@ -256,8 +256,8 @@ def print_sha(p, st):
 
 def print_status(p, st):
     if (st.untracked + st.changed + st.stashes + st.get('to_push', 0)):
-        print("\r%-50s\t%3d\t%3d\t%3d\t%3d" % (p, st.untracked, st.changed,
-                                               st.stashes, st.to_push))
+        print("\r%-50s\t%8d\t%8d\t%8d\t%8d" % (p, st.untracked, st.changed,
+                                               st.stashes, st.get('to_push', 0)))
 
 
 class GitM(object):
@@ -287,6 +287,7 @@ class GitM(object):
                                      r.get('state', ''))
             self.tab.add_row([r[f] if f in r else '' for f in fields])
 
+        yaml.warnings({'YAMLLoadWarning': False})
         if 'compare' in args:
             if not args.compare:
                 args.compare = "status.yaml"
@@ -362,7 +363,7 @@ class GitM(object):
         warn('Scanning directory tree ...')
         log(d)
         status = {}
-        for path, dirs, files in os.walk(d, followlinks=True):
+        for path, dirs, files in os.walk(d, followlinks=False):
             (dir, base) = split(path)
             p = re.sub(r'^\.\/', '', path)
             # log(p)
@@ -396,10 +397,8 @@ class GitM(object):
         return status
 
     def compare(self, d, s):
-        if args.since and s.get(
-                'datetime',
-                datetime.now()) < pd.to_datetime(
-                args.since):
+        if (args.since and s.get('datetime', datetime.now())
+                          < pd.to_datetime( args.since)):
             return
         if not git_compare(d, s) and 'import' in args:
             git_import(d, s)
