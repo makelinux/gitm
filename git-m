@@ -301,7 +301,8 @@ class GitM(object):
                                      r.get('state', ''))
             self.tab.add_row([r[f] if f in r else '' for f in fields])
 
-        yaml.warnings({'YAMLLoadWarning': False})
+        if 'warnings' in dir(yaml):
+            yaml.warnings({'YAMLLoadWarning': False})
         if 'compare' in args:
             if not args.compare:
                 args.compare = "status.yaml"
@@ -485,7 +486,7 @@ class GitM(object):
         self.process_args()
         log(self.loaded)
 
-        if (isdir(args.rest)
+        if (isdir(args.rest) # without arguments or with dir
            and (not self.loaded or 'compare' in args or 'export' in args)):
             # don't scan if self.loaded and not in compare mode
             self.status = self.scan(args.rest)
