@@ -23,6 +23,7 @@ check()
 
 export-test()
 {
+	check './git-m --status | grep -q Total' # without status.yaml
 	check './git-m --export'
 	check './git-m | grep -q empty-tmp'
 	check 'grep -q "^.:\$" status.yaml'
@@ -30,6 +31,7 @@ export-test()
 	check './git-m --csv | grep -q "standalone-empty-tmp,"'
 
 	check 'test -s status.yaml'
+	check './git-m --status | grep -q Total'
 }
 
 import-test()

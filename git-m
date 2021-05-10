@@ -48,6 +48,7 @@ def run_line(m=None):
 
 
 def git_status_get(r, m):
+    " Returns status of untracked changes outside of repository "
     m.untracked = len(r.untracked_files)
     m.changed = len([f.a_path for f in r.index.diff(None)])
     m.stashes = len(r.git.stash('list').splitlines())
@@ -65,6 +66,7 @@ def try_get(a, none=None):
 
 
 def git_get(g):
+    " Returns only repository status, without untracked local changes "
     m = Munch()
     r = Repo(g)
     if len(r.branches):
@@ -256,14 +258,20 @@ def print_sha(p, st):
 print_status_num = 0
 
 def print_status(p, st):
+    log(st)
     global print_status_num
+    format = "\r%-50s\t%8s\t%8s\t%8s\t%8s\t%8s"
     if not print_status_num:
-        print("\r%-50s\t%8s\t%8s\t%8s\t%8s" % ('-', 'untracked', 'changed',
-                                               'stashes', 'to_push'))
+        print(format % ('-', 'untracked', 'changed',
+                                               'stashes', 'to_push', 'to_pull'))
     print_status_num +=1
-    if (st.untracked + st.changed + st.stashes + st.get('to_push', 0)):
-        print("\r%-50s\t%8d\t%8d\t%8d\t%8d" % (p, st.untracked, st.changed,
-                                               st.stashes, st.get('to_push', 0)))
+    if (st.untracked + st.changed + st.stashes
+            + st.get('to_push', 0) + st.get('to_pull', 0)):
+        print(format % (p, st.untracked, st.changed,
+                                               st.stashes,
+                                               st.get('to_push', 0),
+                                               st.get('to_pull', 0)
+                                               ))
 
 
 class GitM(object):
@@ -320,7 +328,10 @@ class GitM(object):
 
         self.out = print_csv if 'csv' in args else self.out
 
-        self.out = print_status if args.status else self.out
+        if args.status:
+            if not self.status:
+                self.loaded = self.scan(args.rest)
+            self.out = print_status
 
         if not self.out:  # default output is table
             self.tab = PrettyTable(fields,
@@ -405,7 +416,7 @@ class GitM(object):
                     st.state = 'undesired'
                     self.out(p, st)
                 if not self.loaded:
-                    self.out(p, st)
+                    self.out(p, st) if self.out else None
             except (InvalidGitRepositoryError,
                     GitCommandError, ValueError) as e:
                 warn(repr(e) +
@@ -423,6 +434,7 @@ class GitM(object):
         self.status[d] = dict(s)
 
     def status_out(self, d, s):
+        log(d)
         r = Repo(d)
         git_status_get(r, s)
         print_status(d, s)
@@ -485,7 +497,6 @@ class GitM(object):
             return self.git_for_each()
         if args.status:
             self.for_each_loaded(self.status_out)
-        if args.status:
             print("Total:", print_status_num)
         else:
             # do comprare without scan even when 'compare' not in args.
