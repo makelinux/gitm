@@ -45,8 +45,8 @@ import-test()
 
 compare-test()
 {
-	git init git-second-tmp > /dev/null
-	(cd git-second-tmp; git commit --allow-empty -m empty; git checkout --detach; git branch -d master)
+	git init --initial-branch=main git-second-tmp > /dev/null
+	(cd git-second-tmp; git commit --allow-empty -m empty; git checkout --detach; git branch -d main)
 
 	../git-m --compare
 	check '../git-m --compare --csv | grep -q "git-second-tmp.*undesired"'
@@ -84,7 +84,7 @@ check ./git-m || exit
 
 git clone -q git@github.com:makelinux/gitm.git gitm-tmp
 \cp -a gitm-tmp gitm-tmp2
-git init standalone-empty-tmp > /dev/null
+git init --initial-branch=main standalone-empty-tmp > /dev/null
 
 export-test
 
