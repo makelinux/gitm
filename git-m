@@ -313,7 +313,7 @@ class GitM(object):
             log(args.compare)
             with open(args.compare) as f:
                 if args.compare.endswith('.yaml'):
-                    self.loaded = Munch(yaml.load(f))
+                    self.loaded = Munch(yaml.full_load(f))
                 if args.compare.endswith('.json'):
                     self.loaded = Munch(json.load(f))
         else:
@@ -324,7 +324,7 @@ class GitM(object):
                     f = sys.stdin
                 else:
                     f = open(fn)
-                self.loaded = Munch(yaml.load(f))
+                self.loaded = Munch(yaml.full_load(f))
                 f.close()
 
         self.out = print_sha if 'sha' in args else self.out
