@@ -88,6 +88,8 @@ git init standalone-empty-tmp > /dev/null
 
 export-test
 
+check ./git-m --urls
+
 mkdir tmp
 cp status.yaml tmp
 pushd tmp > /dev/null

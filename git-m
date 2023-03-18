@@ -215,6 +215,8 @@ def parse_args():
                     'number of stashes '
                     'and number of local "ahead" commits to push '
                     'when any of above values is unzero')
+    ap.add_argument('--urls', action='store_true',
+                    help='lists paths and remote urls')
     ap.add_argument('--since', nargs=1,
                     help='filter aged repositories. '
                     'for example: git-m --since 2019-12-31')
@@ -441,6 +443,15 @@ class GitM(object):
         print_status(d, s)
         self.status[d] = dict(s)
 
+    def urls_out(self, d, s):
+        log(d)
+        r = Repo(d)
+        s = [a.url for a in r.remotes]
+        print(d + ':')
+        for i in s:
+            print('\t' + i)
+        self.status[d] = s
+
     def for_each_loaded(self, func):
         for d, s in self.loaded.items() if self.loaded else {}:
             try:
@@ -496,7 +507,9 @@ class GitM(object):
         # assume git command without an argument
         elif not isdir(args.rest):
             return self.git_for_each()
-        if args.status:
+        if args.urls:
+            self.for_each_loaded(self.urls_out)
+        elif args.status:
             self.for_each_loaded(self.status_out)
             print("Total:", print_status_num)
         else:
