@@ -13,7 +13,7 @@ import argparse
 import inspect
 import traceback
 from datetime import *
-from prettytable import *
+from prettytable import PrettyTable
 from git.exc import InvalidGitRepositoryError, GitCommandError
 from munch import Munch
 import git
@@ -428,8 +428,8 @@ class GitM(object):
         return status
 
     def compare(self, d, s):
-        if (args.since and s.get('datetime', datetime.now())
-                          < pd.to_datetime( args.since)):
+        if (args.since and s.get('datetime', datetime.now()).replace(tzinfo=None)
+                          < pd.to_datetime(args.since, utc=False)):
             return
         if not git_compare(d, s) and 'import' in args:
             git_import(d, s)

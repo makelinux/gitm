@@ -90,6 +90,10 @@ export-test
 
 check ./git-m --urls
 
+check ./git-m --since 2019-12-31
+
+check ./git-m --since 2200-01-01
+
 mkdir tmp
 cp status.yaml tmp
 pushd tmp > /dev/null
