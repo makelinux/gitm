@@ -187,14 +187,14 @@ def parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument('--table', nargs='?', default=argparse.SUPPRESS)
     ap.add_argument('--sha', nargs='?', default=argparse.SUPPRESS,
-                    help='print sha hashes in format of sha1sum utility '
+                    help='prints sha hashes in format of sha1sum utility '
                     'optionally to a file')
     ap.add_argument('--csv', nargs='?', default=argparse.SUPPRESS,
-                    help='print in format csv')
+                    help='prints in format csv')
     ap.add_argument('--json', nargs='?', default=argparse.SUPPRESS)
     ap.add_argument('--export', nargs='?', default=argparse.SUPPRESS,
                     help='scans directory tree and saves results '
-                    'to default status.yaml or specified another file. '
+                    'to default status.yaml or another specified file. '
                     'Can be "-" for standart output.')
     ap.add_argument('--compare', nargs='?', default=argparse.SUPPRESS,
                     help='scans directory tree and compares with status.yaml')
