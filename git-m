@@ -1,26 +1,26 @@
 #!/usr/bin/python3
 
 import os
-from os.path import *
+from os.path import exists, isfile, isdir, dirname, basename, split, islink, realpath, relpath
 import re
 import json
 import yaml
 import ago
 import sys
 import signal
-from sys import *
+from sys import stderr, stdin, stdout
 import argparse
 import inspect
 import traceback
-from datetime import *
+from datetime import datetime
 from prettytable import PrettyTable
 from git.exc import InvalidGitRepositoryError, GitCommandError
 from munch import Munch
 import git
 from git.repo.base import Repo
 import pandas as pd
-from pprint import *
-from colorama.ansi import *
+from pprint import pprint
+from colorama.ansi import clear_line
 
 
 args = rest_args = None
