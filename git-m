@@ -175,12 +175,13 @@ def xstr(s):
 
 
 def short(s, right=True):
-    if not s or len(s) <= 16:
+    max = 16
+    if not s or len(s) <= max:
         return xstr(s)
     if right:
-        return s[:15] + '…'
+        return s[:max-1] + '…'
     else:
-        return '…' + s[-15:]
+        return '…' + s[-(max-1):]
 
 
 def parse_args():
