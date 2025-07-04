@@ -266,7 +266,7 @@ def print_status(p, st):
     if not print_status_num:
         print(format % ('-', 'untracked', 'changed',
                                                'stashes', 'to_push', 'to_pull'))
-    print_status_num +=1
+    print_status_num += 1
     if (st.untracked + st.changed + st.stashes
             + st.get('to_push', 0) + st.get('to_pull', 0)):
         print(format % (p, st.untracked, st.changed,
@@ -303,7 +303,8 @@ class GitM(object):
                                      r.get('state', ''))
             self.tab.add_row([r[f] if f in r else '' for f in fields])
 
-        if 'warnings' in dir(yaml):
+        # process_args
+        if hasattr(yaml, 'warnings'):
             yaml.warnings({'YAMLLoadWarning': False})
         if 'compare' in args:
             if not args.compare:
@@ -357,7 +358,7 @@ class GitM(object):
         elif isdir(rest_args[-1]):
             dir = rest_args[-1]
         else:
-            raise("Neither file or dir: " + dir)
+            raise ValueError("Neither file or dir: " + dir)
         log(dir)
         log(arg)
         cmd = ' '.join(["git -C", dir, args.rest] +
@@ -472,9 +473,8 @@ class GitM(object):
             if args.json == '-':
                 f = sys.stdout
             else:
-                f = open(args.json, "w")
-            f.write(json.dumps(self.status, indent=4, default=str) + "\n")
-            f.close()
+                with open(args.json, "w") as f:
+                    f.write(json.dumps(self.status, indent=4, default=str) + "\n")
 
         log(args)
         if 'export' in args:
