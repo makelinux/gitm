@@ -14,6 +14,7 @@ check()
 		echo -e "\033[2;32mOK \033[0;39m";
 		let successes+=1;
 	else
+		echo "PWD=$PWD"
 		local ret=$?
 		echo -e "\033[2;31mError \033[0;39m $ret"
 		let errors+=1; 
