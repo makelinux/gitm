@@ -8,6 +8,7 @@ import yaml
 import ago
 import sys
 import signal
+import subprocess
 from sys import stderr, stdin, stdout
 import argparse
 import inspect
@@ -362,11 +363,12 @@ class GitM(object):
             raise ValueError("Neither file or dir: " + dir)
         log(dir)
         log(arg)
-        cmd = ' '.join(["git -C", dir, args.rest] +
-                       rest_args[:-1] + [arg])
+        cmd = ["git", "-C", dir, args.rest] + rest_args[:-1]
+        if arg:
+            cmd + [arg]
         log(cmd)
-        ret = os.system(cmd)
-        return os.WEXITSTATUS(ret)
+        ret = subprocess.run(cmd, shell=False)
+        return ret.returncode
 
     def git_for_each(self):
         log()
@@ -382,15 +384,19 @@ class GitM(object):
             if args and 'verbose' in args and args.verbose:
                 print(d + ': ', flush=True)
             log(additional_args)
-            r = os.system(' '.join(["git --no-pager -C", d, args.rest] +
-                additional_args +
-                rest_args))
-            if os.WTERMSIG(r) == signal.SIGINT:
+            cmd = ["git", "--no-pager", "-C", d]
+            if args.rest:
+                cmd += [args.rest]
+            cmd += additional_args + rest_args
+            log(cmd)
+            try:
+                r = subprocess.run(cmd, shell=False)
+                if r.returncode:
+                    ret = r.returncode
+            except KeyboardInterrupt:
                 raise KeyboardInterrupt
             #log(r)
-            if r:
-                ret = r
-        return os.WEXITSTATUS(ret)
+        return ret
 
     def scan(self, d):
         warn('Scanning directory tree ...')
